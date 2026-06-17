@@ -57,47 +57,51 @@
     }
 
     .hero {
-      position: relative;
-      min-height: 290px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 380px;
-      align-items: center;
-      gap: 36px;
-      padding: 24px 32px;
+      padding: 24px 32px 28px;
       border: 1px solid var(--line);
       border-radius: 11px;
       background: var(--panel-soft);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      row-gap: 10px;
     }
 
-    .hero-content {
-      min-width: 0;
-    }
-
-    .hero-title-row {
-      display: flex;
-      align-items: center;
-      gap: 22px;
-      min-width: 0;
-      flex-wrap: nowrap;
-      width: 100%;
-      overflow: hidden;
-    }
-
+    /* 1행 왼쪽: 로고 */
     .brand {
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      flex: 0 0 auto;
       color: #2c3e50;
+      grid-column: 1;
+      grid-row: 1;
+      align-self: center;
     }
 
+    /* 1행 오른쪽: 버튼 */
     .hero-actions {
       display: flex;
       align-items: center;
       gap: 8px;
-      flex: 0 0 auto;
-      margin-left: auto;
       white-space: nowrap;
+      grid-column: 2;
+      grid-row: 1;
+      align-self: center;
+    }
+
+    /* 2행 왼쪽: 타이틀 */
+    h1 {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: center;
+    }
+
+    /* 2행 오른쪽: 마스코트 */
+    .hero-art {
+      grid-column: 2;
+      grid-row: 2;
+      align-self: end;
+      padding-left: 24px;
     }
 
     .brand-mark {
@@ -147,22 +151,19 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(16px, 4.5vw, 38px);
+      font-size: clamp(28px, 4vw, 42px);
       line-height: 1.1;
       color: #34536f;
       white-space: nowrap;
-      flex-shrink: 1;
-      min-width: 0;
     }
 
     .hero-art {
       display: flex;
-      justify-content: center;
-      align-items: center;
+      align-items: flex-end;
     }
 
     .hero-art img {
-      width: 240px;
+      width: 180px;
       max-width: 100%;
       display: block;
     }
@@ -592,6 +593,14 @@
       min-height: 210px;
     }
 
+    .modal-feedback {
+      flex: 1 1 auto;
+      margin: 0;
+      color: #c0392b;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
     .footer {
       padding: 38px 0 28px;
       text-align: center;
@@ -605,22 +614,11 @@
       }
 
       .hero {
-        grid-template-columns: 1fr;
-        min-height: 0;
-        gap: 18px;
-        padding: 24px 22px 28px;
-      }
-
-      .hero-actions {
-        margin-left: auto;
-      }
-
-      .hero-art {
-        justify-content: flex-start;
+        padding: 20px 20px 20px;
       }
 
       .hero-art img {
-        width: 180px;
+        width: 130px;
       }
 
       .setting-grid {
@@ -629,74 +627,20 @@
     }
 
     @media (max-width: 540px) {
-      .hero-title-row {
-        gap: 10px;
-      }
-
-      .brand {
-        gap: 6px;
-      }
-
-      .brand-mark {
-        width: 22px;
-        height: 20px;
-      }
-
-      .brand-mark::before {
-        width: 20px;
-        height: 4px;
-        border-top-width: 3px;
-        border-left-width: 3px;
-        border-right-width: 3px;
-      }
-
-      .brand-mark::after {
-        left: 8px;
-        top: 5px;
-        width: 6px;
-        height: 13px;
-        border-left-width: 3px;
-        border-right-width: 3px;
-      }
-
-      .brand-name {
-        font-size: 11px;
-        letter-spacing: 3px;
-      }
-
-      .brand-sub {
-        display: none;
-      }
-
-      .hero-actions {
-        gap: 5px;
-      }
-
-      .btn-header,
-      .btn-ghost {
-        padding: 7px 9px;
-        font-size: 12px;
-      }
-    }
-
-    @media (max-width: 400px) {
       .hero {
-        padding: 20px 16px 24px;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
       }
 
-      .hero-title-row {
-        gap: 7px;
-      }
-
-      .brand-name {
-        font-size: 10px;
-        letter-spacing: 2px;
-      }
+      .brand    { grid-column: 1; grid-row: 1; }
+      .hero-actions { grid-column: 1; grid-row: 1; justify-self: end; }
+      h1        { grid-column: 1; grid-row: 2; }
+      .hero-art { grid-column: 1; grid-row: 3; justify-self: center; padding-left: 0; padding-top: 8px; }
 
       .btn-header,
       .btn-ghost {
-        padding: 6px 8px;
-        font-size: 11px;
+        padding: 7px 10px;
+        font-size: 12px;
       }
     }
   </style>
@@ -704,22 +648,18 @@
 <body>
   <main class="page">
     <section class="hero" aria-label="SORE CARE">
-      <div class="hero-content">
-        <div class="hero-title-row">
-          <div class="brand" aria-label="TRINITY 트리니티 병원">
-            <span class="brand-mark" aria-hidden="true"></span>
-            <div>
-              <div class="brand-name">TRINITY</div>
-              <div class="brand-sub">트리니티 병원</div>
-            </div>
-          </div>
-          <h1>SORE CARE</h1>
-          <div class="hero-actions">
-            <button class="btn-header" id="open-schedule" type="button">근무표 입력</button>
-            <button class="btn-ghost" id="open-settings" type="button">설정</button>
-          </div>
+      <div class="brand" aria-label="TRINITY 트리니티 병원">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <div>
+          <div class="brand-name">TRINITY</div>
+          <div class="brand-sub">트리니티 병원</div>
         </div>
       </div>
+      <div class="hero-actions">
+        <button class="btn-header" id="open-schedule" type="button">근무표 입력</button>
+        <button class="btn-ghost" id="open-settings" type="button">설정</button>
+      </div>
+      <h1>SORE CARE</h1>
       <div class="hero-art" aria-hidden="true">
         <img src="assets/lab-mascot.png" alt="">
       </div>
@@ -776,8 +716,7 @@
         <textarea class="textarea" id="schedule-json" spellcheck="false" aria-label="근무표 JSON" placeholder='예: {"month":"2025-06","startDate":"2025-06-13","schedule":{"강진영":["D","D","D","off","off","off","off","off"]}}'></textarea>
       </div>
       <div class="modal-actions">
-        <button class="btn-light" id="load-sample" type="button">샘플</button>
-        <button class="btn-light" id="close-schedule" type="button">닫기</button>
+        <p class="modal-feedback" id="schedule-feedback"></p>
         <button class="btn-primary" id="import-schedule" type="button">불러오기</button>
         <button class="btn-primary" id="save-schedule" type="button">저장</button>
       </div>

@@ -19,6 +19,7 @@ const state = {
 
 const els = {
   scheduleModal: document.getElementById("schedule-modal"),
+  scheduleFeedback: document.getElementById("schedule-feedback"),
   settingsModal: document.getElementById("settings-modal"),
   scheduleJson: document.getElementById("schedule-json"),
   staffList: document.getElementById("staff-list"),
@@ -45,8 +46,8 @@ async function init() {
       closeScheduleModal();
     } catch (error) {
       els.scheduleJson.value = formatSavedSchedule(saved);
-      showFeedback(error.message);
       openScheduleModal();
+      els.scheduleFeedback.textContent = error.message;
     }
   } else {
     openScheduleModal();
@@ -111,10 +112,8 @@ function hydrateSettings() {
 
 function bindEvents() {
   document.getElementById("open-schedule").addEventListener("click", openScheduleModal);
-  document.getElementById("close-schedule").addEventListener("click", closeScheduleModal);
   document.getElementById("import-schedule").addEventListener("click", saveScheduleFromTextarea);
   document.getElementById("save-schedule").addEventListener("click", saveScheduleFromTextarea);
-  document.getElementById("load-sample").addEventListener("click", loadSampleSchedule);
   document.getElementById("open-settings").addEventListener("click", openSettingsModal);
   document.getElementById("close-settings").addEventListener("click", closeSettingsModal);
   document.getElementById("save-settings").addEventListener("click", saveSettings);
@@ -134,6 +133,7 @@ function openScheduleModal() {
   if (state.scheduleData) {
     els.scheduleJson.value = JSON.stringify(state.scheduleData, null, 2);
   }
+  els.scheduleFeedback.textContent = "";
   els.scheduleModal.classList.add("open");
 }
 
@@ -150,22 +150,18 @@ function closeSettingsModal() {
   els.settingsModal.classList.remove("open");
 }
 
-async function loadSampleSchedule() {
-  try {
-    const sample = await fetch("data/schedules/sample.json").then(res => res.json());
-    els.scheduleJson.value = JSON.stringify(sample, null, 2);
-    loadSchedule(sample, true);
-  } catch (error) {
-    showFeedback(error.message);
-  }
-}
-
 function saveScheduleFromTextarea() {
+  const raw = els.scheduleJson.value.trim();
+  if (!raw) {
+    els.scheduleFeedback.textContent = "JSON을 입력해 주세요.";
+    return;
+  }
   try {
-    const parsed = JSON.parse(els.scheduleJson.value);
+    const parsed = JSON.parse(raw);
+    els.scheduleFeedback.textContent = "";
     loadSchedule(parsed, true);
   } catch (error) {
-    showFeedback(`근무표 JSON을 확인해 주세요. ${error.message}`);
+    els.scheduleFeedback.textContent = `근무표 JSON을 확인해 주세요. ${error.message}`;
   }
 }
 
