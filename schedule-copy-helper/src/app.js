@@ -112,7 +112,10 @@ function hydrateSettings() {
 
 function bindEvents() {
   document.getElementById("open-schedule").addEventListener("click", openScheduleModal);
-  document.getElementById("import-schedule").addEventListener("click", saveScheduleFromTextarea);
+  document.getElementById("import-schedule").addEventListener("click", () => {
+    document.getElementById("import-file-input").click();
+  });
+  document.getElementById("import-file-input").addEventListener("change", importScheduleFile);
   document.getElementById("save-schedule").addEventListener("click", saveScheduleFromTextarea);
   document.getElementById("open-settings").addEventListener("click", openSettingsModal);
   document.getElementById("close-settings").addEventListener("click", closeSettingsModal);
@@ -148,6 +151,25 @@ function openSettingsModal() {
 
 function closeSettingsModal() {
   els.settingsModal.classList.remove("open");
+}
+
+function importScheduleFile(event) {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      els.scheduleFeedback.textContent = "";
+      els.scheduleJson.value = JSON.stringify(parsed, null, 2);
+      loadSchedule(parsed, true);
+    } catch (error) {
+      els.scheduleFeedback.textContent = `파일을 읽을 수 없습니다. ${error.message}`;
+    }
+  };
+  reader.readAsText(file);
 }
 
 function saveScheduleFromTextarea() {

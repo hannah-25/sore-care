@@ -57,51 +57,42 @@
     }
 
     .hero {
-      padding: 24px 32px 28px;
+      padding: 24px 32px;
       border: 1px solid var(--line);
       border-radius: 11px;
       background: var(--panel-soft);
-      display: grid;
-      grid-template-columns: 1fr auto;
-      grid-template-rows: auto auto;
-      row-gap: 10px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
     }
 
-    /* 1행 왼쪽: 로고 */
+    .hero-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
     .brand {
       display: flex;
       align-items: flex-start;
       gap: 10px;
       color: #2c3e50;
-      grid-column: 1;
-      grid-row: 1;
-      align-self: center;
     }
 
-    /* 1행 오른쪽: 버튼 */
+    .hero-art {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
     .hero-actions {
       display: flex;
       align-items: center;
       gap: 8px;
       white-space: nowrap;
-      grid-column: 2;
-      grid-row: 1;
-      align-self: center;
-    }
-
-    /* 2행 왼쪽: 타이틀 */
-    h1 {
-      grid-column: 1;
-      grid-row: 2;
-      align-self: center;
-    }
-
-    /* 2행 오른쪽: 마스코트 */
-    .hero-art {
-      grid-column: 2;
-      grid-row: 2;
-      align-self: end;
-      padding-left: 24px;
+      margin-left: auto;
+      flex-shrink: 0;
     }
 
     .brand-mark {
@@ -151,19 +142,14 @@
 
     h1 {
       margin: 0;
-      font-size: clamp(28px, 4vw, 42px);
-      line-height: 1.1;
+      font-size: clamp(26px, 3.5vw, 40px);
+      line-height: 1;
       color: #34536f;
       white-space: nowrap;
     }
 
-    .hero-art {
-      display: flex;
-      align-items: flex-end;
-    }
-
     .hero-art img {
-      width: 180px;
+      width: 160px;
       max-width: 100%;
       display: block;
     }
@@ -614,11 +600,12 @@
       }
 
       .hero {
-        padding: 20px 20px 20px;
+        padding: 20px;
+        gap: 20px;
       }
 
       .hero-art img {
-        width: 130px;
+        width: 120px;
       }
 
       .setting-grid {
@@ -626,16 +613,18 @@
       }
     }
 
-    @media (max-width: 540px) {
+    @media (max-width: 560px) {
       .hero {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
+        flex-wrap: wrap;
+        gap: 16px;
       }
 
-      .brand    { grid-column: 1; grid-row: 1; }
-      .hero-actions { grid-column: 1; grid-row: 1; justify-self: end; }
-      h1        { grid-column: 1; grid-row: 2; }
-      .hero-art { grid-column: 1; grid-row: 3; justify-self: center; padding-left: 0; padding-top: 8px; }
+      .hero-actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-end;
+        order: -1;
+      }
 
       .btn-header,
       .btn-ghost {
@@ -648,20 +637,22 @@
 <body>
   <main class="page">
     <section class="hero" aria-label="SORE CARE">
-      <div class="brand" aria-label="TRINITY 트리니티 병원">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <div>
-          <div class="brand-name">TRINITY</div>
-          <div class="brand-sub">트리니티 병원</div>
+      <div class="hero-brand">
+        <div class="brand" aria-label="TRINITY 트리니티 병원">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <div class="brand-name">TRINITY</div>
+            <div class="brand-sub">트리니티 병원</div>
+          </div>
         </div>
+        <h1>SORE CARE</h1>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <img src="assets/lab-mascot.png" alt="">
       </div>
       <div class="hero-actions">
         <button class="btn-header" id="open-schedule" type="button">근무표 입력</button>
         <button class="btn-ghost" id="open-settings" type="button">설정</button>
-      </div>
-      <h1>SORE CARE</h1>
-      <div class="hero-art" aria-hidden="true">
-        <img src="assets/lab-mascot.png" alt="">
       </div>
     </section>
 
@@ -717,7 +708,8 @@
       </div>
       <div class="modal-actions">
         <p class="modal-feedback" id="schedule-feedback"></p>
-        <button class="btn-primary" id="import-schedule" type="button">불러오기</button>
+        <input type="file" id="import-file-input" accept=".json" style="display:none" aria-hidden="true">
+        <button class="btn-light" id="import-schedule" type="button">파일 불러오기</button>
         <button class="btn-primary" id="save-schedule" type="button">저장</button>
       </div>
     </div>
