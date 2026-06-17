@@ -1,0 +1,17 @@
+{
+  "month": "2026-06",
+  "startDate": "2026-06-01",
+  "schedule": {
+    "이주연": ["D","D","off","D","D","off","off","D","D","D","D","D","off","off","D","D","off","D","D","off","D","D","D","D","D","D","off","D","D","off"],
+    "조민지": ["D","E","E","off","off","D","D","D","off","off","E","E","off","off","D","D","D","off","off","D","E","E","E","off","E","E","E","E","off","D"],
+    "이미경": ["off","off","D","E","E","E","off","off","E","E","E","off","E","E","off","E","E","E","off","off","D","D","D","E","off","off","D","E","E","E"],
+    "강진영": ["E","E","off","off","D","N","N","off","off","D","D","off","D","D","E","off","D","D","D","D","off","off","E","E","N","N","off","off","N","N"],
+    "선민주": ["E","N","N","off","off","E","E","E","off","off","off","D","D","D","N","N","off","off","E","E","off","off","off","off","off","off","off","off","D","D"],
+    "박형희": ["off","off","E","E","E","off","E","E","E","off","off","E","E","E","off","off","off","E","E","E","E","E","off","off","E","E","E","E","off","E"],
+    "노혜지": ["off","D","D","D","off","D","D","off","D","E","N","N","off","off","E","E","E","off","N","N","N","off","off","D","D","D","D","off","D","off"],
+    "정해주": ["N","N","N","off","off","off","N","N","N","off","off","off","N","N","N","off","off","off","N","N","N","off","off","off","N","N","N","off","off","off"],
+    "문진영": ["off","off","off","N","N","N","off","off","off","N","N","N","off","off","off","N","N","N","off","off","off","N","N","N","off","off","off","N","N","N"],
+    "우창희": ["N","off","off","N","N","off","off","N","N","N","off","off","N","N","off","off","N","N","off","off","off","N","N","N","off","off","N","N","off","off"],
+    "양윤경": ["off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off","off"]
+  }
+}

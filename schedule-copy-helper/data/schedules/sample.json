@@ -1,0 +1,16 @@
+{
+  "month": "2025-06",
+  "startDate": "2025-06-13",
+  "schedule": {
+    "강진영": ["D", "D", "D", "off", "off", "off", "off", "off"],
+    "조민지": ["off", "off", "off", "D", "D", "D", "D", "D"],
+    "선민주": ["E", "E", "off", "off", "off", "off", "off", "off"],
+    "이미경": ["off", "off", "E", "E", "E", "E", "E", "E"],
+    "정해주": ["N", "N", "off", "off", "off", "off", "off", "off"],
+    "문진영": ["off", "off", "N", "N", "N", "N", "N", "N"],
+    "이주연": ["off", "D", "off", "off", "off", "D", "off", "off"],
+    "박형희": ["D", "off", "off", "off", "D", "off", "off", "off"],
+    "노혜지": ["off", "E", "off", "E", "off", "E", "off", "E"],
+    "우창희": ["off", "off", "off", "N", "off", "off", "off", "N"]
+  }
+}

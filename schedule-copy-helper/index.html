@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SORE CARE</title>
+  <link rel="icon" href="assets/mascot.ico">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f4f7fa;
+      --panel: #ffffff;
+      --panel-soft: #eef5f9;
+      --line: #d9e2ea;
+      --text: #263f58;
+      --muted: #65798c;
+      --primary: #526a82;
+      --primary-dark: #384d60;
+      --result: #374d5d;
+      --d: #e8f3ff;
+      --e: #fff4d8;
+      --n: #efeaff;
+      --off: #eef2f5;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+
+    button, textarea, input {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.12s ease;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .page {
+      width: min(1180px, calc(100vw - 48px));
+      margin: 8px auto 28px;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 290px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      align-items: center;
+      gap: 36px;
+      padding: 24px 32px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: var(--panel-soft);
+    }
+
+    .hero-content {
+      min-width: 0;
+    }
+
+    .hero-title-row {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      min-width: 0;
+      flex-wrap: nowrap;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .brand {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      flex: 0 0 auto;
+      color: #2c3e50;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 28px;
+      height: 24px;
+      flex: 0 0 auto;
+      margin-top: 2px;
+    }
+
+    .brand-mark::before {
+      content: "";
+      position: absolute;
+      left: 1px;
+      top: 0;
+      width: 25px;
+      height: 5px;
+      border-top: 4px solid #8aa1b7;
+      border-left: 4px solid #8aa1b7;
+      border-right: 4px solid #8aa1b7;
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      left: 10px;
+      top: 7px;
+      width: 7px;
+      height: 17px;
+      border-left: 4px solid #b9cad8;
+      border-right: 4px solid #dce8f0;
+    }
+
+    .brand-name {
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: 6px;
+      color: #333d46;
+    }
+
+    .brand-sub {
+      margin-top: 6px;
+      font-size: 10px;
+      letter-spacing: 5px;
+      color: #5f6d79;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(16px, 4.5vw, 38px);
+      line-height: 1.1;
+      color: #34536f;
+      white-space: nowrap;
+      flex-shrink: 1;
+      min-width: 0;
+    }
+
+    .hero-art {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .hero-art img {
+      width: 240px;
+      max-width: 100%;
+      display: block;
+    }
+
+    .panel {
+      margin-top: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      box-shadow: 0 1px 2px rgba(42, 64, 82, 0.03);
+      overflow: hidden;
+    }
+
+    .toolbar {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 16px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-spacer {
+      flex: 1 1 auto;
+    }
+
+    .toolbar-label {
+      display: block;
+      margin-bottom: 6px;
+      color: #274666;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .date-control {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .date-control-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary,
+    .btn-header {
+      background: var(--primary);
+      color: #fff;
+      padding: 10px 17px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .btn-primary:hover,
+    .btn-header:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-light {
+      background: #fff;
+      color: #142b3d;
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 13px;
+      border: 1px solid transparent;
+    }
+
+    .btn-light:hover {
+      background: #edf3f7;
+      border-color: var(--line);
+    }
+
+    .btn-ghost {
+      background: #edf3f7;
+      color: #274666;
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .stats,
+    .date-range {
+      color: #1f3a52;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .date-input {
+      width: 84px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 0 10px;
+      color: #1f3a52;
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .section-title,
+    .collapsible-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      color: #274666;
+      font-weight: 800;
+      background: #f9fbfc;
+      text-align: left;
+    }
+
+    .collapsible-header {
+      cursor: pointer;
+    }
+
+    .section-body {
+      padding: 16px;
+    }
+
+    .schedule-grid {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f5f8fb;
+      color: #274666;
+      font-weight: 800;
+    }
+
+    td.name-cell {
+      text-align: left;
+      font-weight: 700;
+      color: #274666;
+      background: #fbfdfe;
+    }
+
+    .shift-D { background: var(--d); }
+    .shift-E { background: var(--e); }
+    .shift-N { background: var(--n); }
+    .shift-off { background: var(--off); color: #7d8b98; }
+    .selected-cell {
+      outline: 2px solid rgba(82, 106, 130, 0.45);
+      outline-offset: -2px;
+      font-weight: 800;
+    }
+
+    .result-table {
+      margin-top: 16px;
+    }
+
+    .copy-panel {
+      background: #fff;
+      color: var(--text);
+      padding: 16px;
+      min-height: 260px;
+    }
+
+    .copy-panel .section-note {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .sequence-panel {
+      padding: 18px;
+      background: #fff;
+    }
+
+    .sequence-card {
+      width: min(520px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfe;
+      overflow: hidden;
+    }
+
+    .sequence-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px 15px;
+      background: #f5f8fb;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sequence-kicker {
+      color: #274666;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .sequence-progress {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .sequence-card-body {
+      padding: 18px 15px 16px;
+    }
+
+    .sequence-meta {
+      margin: 0 0 18px;
+      color: #526a82;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .sequence-name {
+      min-height: 44px;
+      margin: 0 0 18px;
+      color: #102d45;
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 800;
+    }
+
+    .sequence-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .sequence-actions button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+    }
+
+    .repeat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 14px;
+    }
+
+    .repeat-block {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fbfdfe;
+    }
+
+    .repeat-title,
+    .repeat-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #f5f8fb;
+      color: #274666;
+      font-weight: 800;
+    }
+
+    .repeat-range {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .repeat-actions {
+      display: flex;
+      flex: 0 0 auto;
+      gap: 8px;
+    }
+
+    .repeat-data {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    .repeat-copy-btn,
+    .repeat-date-btn,
+    .btn-copy,
+    .btn-next {
+      background: var(--primary);
+      color: #fff;
+      padding: 8px 12px;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .repeat-date-btn {
+      background: #e8eef4;
+      color: #274666;
+    }
+
+    .copy-feedback {
+      min-height: 20px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .progress-bar {
+      height: 6px;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e2eaf1;
+    }
+
+    .progress-bar span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: var(--primary);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(25, 42, 56, 0.42);
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: min(780px, 100%);
+      max-height: min(860px, calc(100vh - 48px));
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fff;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(23, 42, 58, 0.24);
+    }
+
+    .modal-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #f9fbfc;
+    }
+
+    .modal-head h2 {
+      margin: 0;
+      color: #274666;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .modal-body {
+      padding: 16px 18px;
+      overflow: auto;
+    }
+
+    .input-guide {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 18px;
+      border-top: 1px solid var(--line);
+      background: #fbfdfe;
+    }
+
+    .textarea,
+    .setting-textarea {
+      width: 100%;
+      min-height: 230px;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      resize: vertical;
+      color: #001b31;
+      background: #fff;
+      font-family: "Consolas", "D2Coding", monospace;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .setting-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .field-label {
+      display: block;
+      margin-bottom: 8px;
+      color: #274666;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .setting-textarea {
+      min-height: 210px;
+    }
+
+    .footer {
+      padding: 38px 0 28px;
+      text-align: center;
+      color: #5c7082;
+      font-size: 12px;
+    }
+
+    @media (max-width: 820px) {
+      .page {
+        width: min(100% - 24px, 1180px);
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        min-height: 0;
+        gap: 18px;
+        padding: 24px 22px 28px;
+      }
+
+      .hero-actions {
+        margin-left: auto;
+      }
+
+      .hero-art {
+        justify-content: flex-start;
+      }
+
+      .hero-art img {
+        width: 180px;
+      }
+
+      .setting-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .hero-title-row {
+        gap: 10px;
+      }
+
+      .brand {
+        gap: 6px;
+      }
+
+      .brand-mark {
+        width: 22px;
+        height: 20px;
+      }
+
+      .brand-mark::before {
+        width: 20px;
+        height: 4px;
+        border-top-width: 3px;
+        border-left-width: 3px;
+        border-right-width: 3px;
+      }
+
+      .brand-mark::after {
+        left: 8px;
+        top: 5px;
+        width: 6px;
+        height: 13px;
+        border-left-width: 3px;
+        border-right-width: 3px;
+      }
+
+      .brand-name {
+        font-size: 11px;
+        letter-spacing: 3px;
+      }
+
+      .brand-sub {
+        display: none;
+      }
+
+      .hero-actions {
+        gap: 5px;
+      }
+
+      .btn-header,
+      .btn-ghost {
+        padding: 7px 9px;
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .hero {
+        padding: 20px 16px 24px;
+      }
+
+      .hero-title-row {
+        gap: 7px;
+      }
+
+      .brand-name {
+        font-size: 10px;
+        letter-spacing: 2px;
+      }
+
+      .btn-header,
+      .btn-ghost {
+        padding: 6px 8px;
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero" aria-label="SORE CARE">
+      <div class="hero-content">
+        <div class="hero-title-row">
+          <div class="brand" aria-label="TRINITY 트리니티 병원">
+            <span class="brand-mark" aria-hidden="true"></span>
+            <div>
+              <div class="brand-name">TRINITY</div>
+              <div class="brand-sub">트리니티 병원</div>
+            </div>
+          </div>
+          <h1>SORE CARE</h1>
+          <div class="hero-actions">
+            <button class="btn-header" id="open-schedule" type="button">근무표 입력</button>
+            <button class="btn-ghost" id="open-settings" type="button">설정</button>
+          </div>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <img src="assets/lab-mascot.png" alt="">
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="toolbar">
+        <div class="date-control">
+          <span class="toolbar-label">시작일 입력</span>
+          <div class="date-control-row">
+            <input class="date-input" id="start-date-input" type="text" value="" placeholder="6/13" aria-label="시작일">
+            <button class="btn-primary" id="apply-date" type="button">적용</button>
+            <span class="date-range" id="date-range-display">-</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <button class="collapsible-header" id="selection-toggle" type="button">
+        <span>자동 선택 결과</span>
+        <span id="selection-toggle-label">펼치기</span>
+      </button>
+      <div class="section-body schedule-grid" id="selection-body" style="display: none;">
+        <div id="schedule-preview"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">반복 복사</div>
+      <div class="copy-panel" id="copy-panel">
+        <p class="section-note">날짜 행과 근무자 행을 순서대로 복사합니다.</p>
+        <div id="repeat-copy-panel"></div>
+        <div class="progress-bar" aria-hidden="true"><span></span></div>
+        <div class="copy-feedback" id="copy-feedback"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">순차 복사 모드</div>
+      <div class="sequence-panel" id="sequence-panel"></div>
+    </section>
+
+    <footer class="footer">© 2026 Hannah J · hannah.j.dev@gmail.com</footer>
+  </main>
+
+  <div class="modal" id="schedule-modal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="schedule-modal-title">
+      <div class="modal-head">
+        <h2 id="schedule-modal-title">근무표 입력</h2>
+      </div>
+      <div class="modal-body">
+        <p class="input-guide">시작일부터 8일치 근무표를 JSON으로 입력합니다. 4일씩 1블록, 2블록으로 나뉩니다.</p>
+        <textarea class="textarea" id="schedule-json" spellcheck="false" aria-label="근무표 JSON" placeholder='예: {"month":"2025-06","startDate":"2025-06-13","schedule":{"강진영":["D","D","D","off","off","off","off","off"]}}'></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-light" id="load-sample" type="button">샘플</button>
+        <button class="btn-light" id="close-schedule" type="button">닫기</button>
+        <button class="btn-primary" id="import-schedule" type="button">불러오기</button>
+        <button class="btn-primary" id="save-schedule" type="button">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="settings-modal">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+      <div class="modal-head">
+        <h2 id="settings-modal-title">설정</h2>
+      </div>
+      <div class="modal-body setting-grid">
+        <label>
+          <span class="field-label">직원 목록</span>
+          <textarea class="setting-textarea" id="staff-list" spellcheck="false"></textarea>
+        </label>
+        <label>
+          <span class="field-label">제외 명단</span>
+          <textarea class="setting-textarea" id="exclude-list" spellcheck="false"></textarea>
+        </label>
+        <label>
+          <span class="field-label">후순위 명단</span>
+          <textarea class="setting-textarea" id="low-priority-list" spellcheck="false"></textarea>
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-light" id="close-settings" type="button">닫기</button>
+        <button class="btn-primary" id="save-settings" type="button">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

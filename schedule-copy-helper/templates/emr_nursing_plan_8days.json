@@ -1,0 +1,15 @@
+{
+  "templateName": "간호계획및실시_8days",
+  "dateCount": 8,
+  "shiftOrder": ["D", "E", "N"],
+  "copyOrder": [
+    { "dayIndex": 0, "shift": "D" }, { "dayIndex": 0, "shift": "E" }, { "dayIndex": 0, "shift": "N" },
+    { "dayIndex": 1, "shift": "D" }, { "dayIndex": 1, "shift": "E" }, { "dayIndex": 1, "shift": "N" },
+    { "dayIndex": 2, "shift": "D" }, { "dayIndex": 2, "shift": "E" }, { "dayIndex": 2, "shift": "N" },
+    { "dayIndex": 3, "shift": "D" }, { "dayIndex": 3, "shift": "E" }, { "dayIndex": 3, "shift": "N" },
+    { "dayIndex": 4, "shift": "D" }, { "dayIndex": 4, "shift": "E" }, { "dayIndex": 4, "shift": "N" },
+    { "dayIndex": 5, "shift": "D" }, { "dayIndex": 5, "shift": "E" }, { "dayIndex": 5, "shift": "N" },
+    { "dayIndex": 6, "shift": "D" }, { "dayIndex": 6, "shift": "E" }, { "dayIndex": 6, "shift": "N" },
+    { "dayIndex": 7, "shift": "D" }, { "dayIndex": 7, "shift": "E" }, { "dayIndex": 7, "shift": "N" }
+  ]
+}
