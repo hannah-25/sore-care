@@ -344,6 +344,20 @@
       border-radius: 8px;
       background: #fbfdfe;
       overflow: hidden;
+      border-left-width: 7px;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .sequence-card.cells-1 {
+      border-left-color: #7ecdc0;
+    }
+
+    .sequence-card.cells-2 {
+      border-left-color: #f4a8bc;
+    }
+
+    .sequence-card.cells-3 {
+      border-left-color: #e8c96a;
     }
 
     .sequence-card-head {
@@ -352,7 +366,7 @@
       justify-content: space-between;
       gap: 12px;
       padding: 13px 15px;
-      background: #f5f8fb;
+      background: transparent;
       border-bottom: 1px solid var(--line);
     }
 
@@ -377,6 +391,37 @@
       color: #526a82;
       font-size: 14px;
       font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cell-count-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 11px;
+      border-radius: 20px;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0;
+      line-height: 1.4;
+    }
+
+    .cell-count-1 {
+      background: #c6ede9;
+      color: #2e8a7f;
+    }
+
+    .cell-count-2 {
+      background: #fad4e0;
+      color: #b54d70;
+    }
+
+    .cell-count-3 {
+      background: #f7e9b0;
+      color: #8a6a00;
     }
 
     .sequence-name {

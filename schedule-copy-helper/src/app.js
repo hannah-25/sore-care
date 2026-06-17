@@ -337,13 +337,13 @@ function renderSequenceCopy() {
   const displayName = step.name || "수동 확인";
 
   els.sequencePanel.innerHTML = `
-    <div class="sequence-card">
+    <div class="sequence-card cells-${step.cellCount}">
       <div class="sequence-card-head">
         <span class="sequence-kicker">다음 입력</span>
         <span class="sequence-progress">${state.sequenceIndex + 1} / ${state.sequenceSteps.length}</span>
       </div>
       <div class="sequence-card-body">
-        <p class="sequence-meta">${step.blockIndex}블록 · ${escapeHtml(step.shiftLabel)} · ${escapeHtml(dateRange)} · ${step.cellCount}칸</p>
+        <p class="sequence-meta">${step.blockIndex}블록 · ${escapeHtml(step.shiftLabel)} · ${escapeHtml(dateRange)} · <span class="cell-count-badge cell-count-${step.cellCount}">${step.cellCount}칸</span></p>
         <p class="sequence-name">${escapeHtml(displayName)}</p>
         <div class="sequence-actions">
           <button class="btn-primary" id="advance-sequence" type="button">완료 후 다음</button>
