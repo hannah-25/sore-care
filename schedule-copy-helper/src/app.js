@@ -329,13 +329,18 @@ function renderSequenceCopy() {
   const displayName = step.name || "수동 확인";
 
   els.sequencePanel.innerHTML = `
+    <div class="sequence-date-row">
+      <span class="sequence-date-label">날짜</span>
+      <span class="sequence-date-value">${escapeHtml(dateRange)}</span>
+      <button class="btn-ghost sequence-date-copy-btn" id="copy-date-btn" type="button">복사</button>
+    </div>
     <div class="sequence-card cells-${step.cellCount}">
       <div class="sequence-card-head">
         <span class="sequence-kicker">다음 입력</span>
         <span class="sequence-progress">${state.sequenceIndex + 1} / ${state.sequenceSteps.length}</span>
       </div>
       <div class="sequence-card-body">
-        <p class="sequence-meta">${escapeHtml(step.shiftLabel)} · ${escapeHtml(dateRange)} · <span class="cell-count-badge cell-count-${step.cellCount}">${step.cellCount}칸</span></p>
+        <p class="sequence-meta">${escapeHtml(step.shiftLabel)} · <span class="cell-count-badge cell-count-${step.cellCount}">${step.cellCount}칸</span></p>
         <p class="sequence-name">${escapeHtml(displayName)}</p>
         <div class="sequence-actions">
           <button class="btn-primary" id="advance-sequence" type="button">완료 후 다음</button>
@@ -345,6 +350,10 @@ function renderSequenceCopy() {
   `;
 
   document.getElementById("advance-sequence")?.addEventListener("click", advanceSequence);
+  document.getElementById("copy-date-btn")?.addEventListener("click", async () => {
+    await repeatCopyRow(step.dates.join("\t"));
+    showFeedback("날짜를 복사했습니다.");
+  });
 }
 
 function currentSequenceStep() {
