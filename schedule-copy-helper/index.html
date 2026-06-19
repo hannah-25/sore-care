@@ -319,20 +319,6 @@
       margin-top: 16px;
     }
 
-    .copy-panel {
-      background: #fff;
-      color: var(--text);
-      padding: 16px;
-      min-height: 260px;
-    }
-
-    .copy-panel .section-note {
-      margin: 0 0 14px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
     .sequence-panel {
       padding: 18px;
       background: #fff;
@@ -444,89 +430,12 @@
       opacity: 0.48;
     }
 
-    .repeat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 14px;
-    }
-
-    .repeat-block {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      overflow: hidden;
-      background: #fbfdfe;
-    }
-
-    .repeat-title,
-    .repeat-block-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 14px;
-      background: #f5f8fb;
-      color: #274666;
-      font-weight: 800;
-    }
-
-    .repeat-range {
-      display: block;
-      margin-top: 3px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .repeat-actions {
-      display: flex;
-      flex: 0 0 auto;
-      gap: 8px;
-    }
-
-    .repeat-data {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--text);
-    }
-
-    .repeat-copy-btn,
-    .repeat-date-btn,
-    .btn-copy,
-    .btn-next {
-      background: var(--primary);
-      color: #fff;
-      padding: 8px 12px;
-      font-weight: 800;
-      font-size: 12px;
-    }
-
-    .repeat-date-btn {
-      background: #e8eef4;
-      color: #274666;
-    }
-
     .copy-feedback {
       min-height: 20px;
       margin-top: 10px;
       color: var(--muted);
       font-size: 12px;
       font-weight: 700;
-    }
-
-    .progress-bar {
-      height: 6px;
-      margin-top: 12px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: #e2eaf1;
-    }
-
-    .progress-bar span {
-      display: block;
-      width: 100%;
-      height: 100%;
-      background: var(--primary);
     }
 
     .modal {
@@ -725,18 +634,11 @@
     </section>
 
     <section class="panel">
-      <div class="section-title">반복 복사</div>
-      <div class="copy-panel" id="copy-panel">
-        <p class="section-note">날짜 행과 근무자 행을 순서대로 복사합니다.</p>
-        <div id="repeat-copy-panel"></div>
-        <div class="progress-bar" aria-hidden="true"><span></span></div>
-        <div class="copy-feedback" id="copy-feedback"></div>
-      </div>
-    </section>
-
-    <section class="panel">
       <div class="section-title">순차 복사 모드</div>
       <div class="sequence-panel" id="sequence-panel"></div>
+      <div style="padding: 0 18px 14px;">
+        <div class="copy-feedback" id="copy-feedback"></div>
+      </div>
     </section>
 
     <footer class="footer">© 2026 Hannah J · hannah.j.dev@gmail.com</footer>
@@ -748,7 +650,7 @@
         <h2 id="schedule-modal-title">근무표 입력</h2>
       </div>
       <div class="modal-body">
-        <p class="input-guide">시작일부터 8일치 근무표를 JSON으로 입력합니다. 4일씩 1블록, 2블록으로 나뉩니다.</p>
+        <p class="input-guide">시작일부터 8일치 근무표를 JSON으로 입력합니다.</p>
         <textarea class="textarea" id="schedule-json" spellcheck="false" aria-label="근무표 JSON" placeholder='예: {"month":"2025-06","startDate":"2025-06-13","schedule":{"강진영":["D","D","D","off","off","off","off","off"]}}'></textarea>
       </div>
       <div class="modal-actions">

@@ -29,7 +29,6 @@ const els = {
   selectionBody: document.getElementById("selection-body"),
   selectionToggleLabel: document.getElementById("selection-toggle-label"),
   sequencePanel: document.getElementById("sequence-panel"),
-  repeatCopyPanel: document.getElementById("repeat-copy-panel"),
   copyFeedback: document.getElementById("copy-feedback"),
   dateRange: document.getElementById("date-range-display"),
   startDateInput: document.getElementById("start-date-input")
@@ -208,7 +207,7 @@ function validateSchedule(data) {
 
   const maxDays = Math.max(...Object.values(data.schedule).map(shifts => Array.isArray(shifts) ? shifts.length : 0));
   if (maxDays < 8) {
-    throw new Error("1블록과 2블록 복사를 위해 시작일부터 최소 8일치 근무표가 필요합니다.");
+    throw new Error("시작일부터 최소 8일치 근무표가 필요합니다.");
   }
 }
 
@@ -226,7 +225,6 @@ function rerunSelection() {
   renderSummary();
   renderSchedulePreview();
   renderSequenceCopy();
-  renderRepeatCopy();
 }
 
 function renderSummary() {
@@ -273,37 +271,31 @@ function renderSchedulePreview() {
 
 function buildSequenceSteps() {
   const shiftLabels = { D: "Day", E: "Eve", N: "Night" };
-  const blockSize = 4;
   const steps = [];
+  const total = state.dates.length;
 
-  for (let blockStart = 0; blockStart < state.dates.length; blockStart += blockSize) {
-    const blockEnd = Math.min(blockStart + blockSize, state.dates.length);
-    const blockIndex = Math.floor(blockStart / blockSize) + 1;
+  for (const shift of ["D", "E", "N"]) {
+    let startIndex = 0;
+    while (startIndex < total) {
+      const name = state.results[startIndex]?.[shift]?.name || "";
+      let endIndex = startIndex;
 
-    for (const shift of ["D", "E", "N"]) {
-      let startIndex = blockStart;
-      while (startIndex < blockEnd) {
-        const name = state.results[startIndex]?.[shift]?.name || "";
-        let endIndex = startIndex;
-
-        while (
-          endIndex + 1 < blockEnd
-          && (state.results[endIndex + 1]?.[shift]?.name || "") === name
-        ) {
-          endIndex += 1;
-        }
-
-        steps.push({
-          blockIndex,
-          shift,
-          shiftLabel: shiftLabels[shift],
-          name,
-          dates: state.dates.slice(startIndex, endIndex + 1),
-          cellCount: endIndex - startIndex + 1
-        });
-
-        startIndex = endIndex + 1;
+      while (
+        endIndex + 1 < total
+        && (state.results[endIndex + 1]?.[shift]?.name || "") === name
+      ) {
+        endIndex += 1;
       }
+
+      steps.push({
+        shift,
+        shiftLabel: shiftLabels[shift],
+        name,
+        dates: state.dates.slice(startIndex, endIndex + 1),
+        cellCount: endIndex - startIndex + 1
+      });
+
+      startIndex = endIndex + 1;
     }
   }
 
@@ -343,7 +335,7 @@ function renderSequenceCopy() {
         <span class="sequence-progress">${state.sequenceIndex + 1} / ${state.sequenceSteps.length}</span>
       </div>
       <div class="sequence-card-body">
-        <p class="sequence-meta">${step.blockIndex}블록 · ${escapeHtml(step.shiftLabel)} · ${escapeHtml(dateRange)} · <span class="cell-count-badge cell-count-${step.cellCount}">${step.cellCount}칸</span></p>
+        <p class="sequence-meta">${escapeHtml(step.shiftLabel)} · ${escapeHtml(dateRange)} · <span class="cell-count-badge cell-count-${step.cellCount}">${step.cellCount}칸</span></p>
         <p class="sequence-name">${escapeHtml(displayName)}</p>
         <div class="sequence-actions">
           <button class="btn-primary" id="advance-sequence" type="button">완료 후 다음</button>
@@ -377,39 +369,6 @@ async function advanceSequence() {
   }
 }
 
-function renderRepeatCopy() {
-  const blockSize = 4;
-  const blocks = [];
-
-  for (let start = 0; start < state.dates.length; start += blockSize) {
-    const blockIndex = blocks.length + 1;
-    const dates = state.dates.slice(start, start + blockSize);
-    const dateText = dates.join("\t");
-
-    const allNames = dates
-      .flatMap((_, offset) => ["D", "E", "N"].map(shift => state.results[start + offset]?.[shift]?.name || ""))
-      .join("\t");
-
-    blocks.push(`
-      <div class="repeat-block">
-        <div class="repeat-block-header">
-          <span>
-            ${blockIndex}블록
-            <span class="repeat-range">${escapeHtml(dates[0] || "")}${dates.length > 1 ? ` - ${escapeHtml(dates[dates.length - 1])}` : ""}</span>
-          </span>
-          <span class="repeat-actions">
-            <button class="repeat-date-btn" id="rbtn-date-${blockIndex}" type="button" onclick="repeatCopyRow('${escapeJsString(dateText)}')">날짜 복사</button>
-            <button class="repeat-copy-btn" id="rbtn-${blockIndex}" type="button" onclick="repeatCopyRow('${escapeJsString(allNames)}')">복사 (${allNames.split("\t").filter(Boolean).length}개)</button>
-          </span>
-        </div>
-      </div>
-    `);
-  }
-
-  els.repeatCopyPanel.innerHTML = blocks.length
-    ? `<div class="repeat-grid">${blocks.join("")}</div>`
-    : `<div class="repeat-block"><div class="repeat-title">근무표를 먼저 입력해 주세요.</div></div>`;
-}
 
 function toggleSelectionResult() {
   const isHidden = els.selectionBody.style.display === "none";
@@ -503,7 +462,6 @@ function escapeJsString(value) {
 
 window.openScheduleModal = openScheduleModal;
 window.closeScheduleModal = closeScheduleModal;
-window.repeatCopyRow = repeatCopyRow;
 
 init().catch(error => {
   showFeedback(error.message);
