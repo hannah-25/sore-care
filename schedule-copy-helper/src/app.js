@@ -329,16 +329,16 @@ function renderSequenceCopy() {
     : step.dates[0];
 
   els.sequencePanel.innerHTML = `
-    <div class="sequence-card shift-card-${step.shift}">
-      <div class="sequence-card-head">
-        <span class="sequence-kicker shift-label-${step.shift}">${escapeHtml(step.shiftLabel)}</span>
-        <span class="sequence-progress">${state.sequenceIndex + 1} / ${state.sequenceSteps.length}</span>
-      </div>
-      <div class="sequence-card-body">
-        <p class="sequence-meta">${escapeHtml(dateRange)} · <span class="cell-count-badge cell-count-${step.cellCount}">${step.cellCount}칸</span></p>
-        <p class="sequence-name">${escapeHtml(displayName)}</p>
-        <div class="sequence-actions">
-          <button class="btn-primary" id="advance-sequence" type="button">완료 후 다음</button>
+    <div class="sequence-card cells-${Math.min(step.cellCount, 3)}">
+      <div class="shift-strip">${escapeHtml(step.shift)}</div>
+      <div class="sequence-card-content">
+        <div class="sequence-card-body">
+          <p class="sequence-meta"><span class="sequence-progress">${state.sequenceIndex + 1} / ${state.sequenceSteps.length}</span><span class="cell-count-badge cell-count-${Math.min(step.cellCount, 3)}">${step.cellCount}칸</span></p>
+          <p class="sequence-date">${escapeHtml(dateRange)}</p>
+          <p class="sequence-name">${escapeHtml(displayName)}</p>
+          <div class="sequence-actions">
+            <button class="btn-primary" id="advance-sequence" type="button">완료 후 다음</button>
+          </div>
         </div>
       </div>
     </div>

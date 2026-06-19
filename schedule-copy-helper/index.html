@@ -331,43 +331,30 @@
       background: #fbfdfe;
       overflow: hidden;
       border-left-width: 7px;
-      transition: background 0.15s, border-color 0.15s;
+      display: flex;
     }
 
-    .sequence-card.shift-card-D {
-      border-left-color: #5b9bd5;
-    }
+    .sequence-card.cells-1 { border-left-color: #7ecdc0; }
+    .sequence-card.cells-2 { border-left-color: #f4a8bc; }
+    .sequence-card.cells-3 { border-left-color: #e8c96a; }
 
-    .sequence-card.shift-card-E {
-      border-left-color: #d4a020;
-    }
-
-    .sequence-card.shift-card-N {
-      border-left-color: #8b6bc7;
-    }
-
-    .sequence-card-head {
+    .shift-strip {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 13px 15px;
-      background: transparent;
-      border-bottom: 1px solid var(--line);
+      justify-content: center;
+      width: 52px;
+      flex-shrink: 0;
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 0;
+      color: #8fa8be;
+      border-right: 1px solid var(--line);
     }
 
-    .sequence-card.shift-card-D .sequence-card-head { background: #eef5ff; }
-    .sequence-card.shift-card-E .sequence-card-head { background: #fffaed; }
-    .sequence-card.shift-card-N .sequence-card-head { background: #f3f0ff; }
-
-    .sequence-kicker {
-      font-size: 13px;
-      font-weight: 800;
+    .sequence-card-content {
+      flex: 1;
+      min-width: 0;
     }
-
-    .shift-label-D { color: #2a5c99; }
-    .shift-label-E { color: #7a5200; }
-    .shift-label-N { color: #4a2f8a; }
 
     .sequence-progress {
       color: var(--muted);
@@ -415,6 +402,14 @@
     .cell-count-3 {
       background: #f7e9b0;
       color: #8a6a00;
+    }
+
+    .sequence-date {
+      margin: 0 0 6px;
+      color: #526a82;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
     }
 
     .sequence-name {
