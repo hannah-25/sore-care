@@ -323,17 +323,9 @@ function renderSequenceCopy() {
   }
 
   const step = state.sequenceSteps[state.sequenceIndex];
-  const dateRange = step.dates.length > 1
-    ? `${step.dates[0]}~${step.dates[step.dates.length - 1]}`
-    : step.dates[0];
   const displayName = step.name || "수동 확인";
 
   els.sequencePanel.innerHTML = `
-    <div class="sequence-date-row">
-      <span class="sequence-date-label">날짜</span>
-      <span class="sequence-date-value">${escapeHtml(dateRange)}</span>
-      <button class="btn-ghost sequence-date-copy-btn" id="copy-date-btn" type="button">복사</button>
-    </div>
     <div class="sequence-card cells-${step.cellCount}">
       <div class="sequence-card-head">
         <span class="sequence-kicker">다음 입력</span>
@@ -350,10 +342,6 @@ function renderSequenceCopy() {
   `;
 
   document.getElementById("advance-sequence")?.addEventListener("click", advanceSequence);
-  document.getElementById("copy-date-btn")?.addEventListener("click", async () => {
-    await repeatCopyRow(step.dates.join("\t"));
-    showFeedback("날짜를 복사했습니다.");
-  });
 }
 
 function currentSequenceStep() {
