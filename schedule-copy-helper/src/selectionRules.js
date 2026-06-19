@@ -1,39 +1,38 @@
 /**
- * 날짜별 D/E/N 담당자 자동 선택
- *
- * 규칙:
- * 1. 해당 날짜/근무조 후보 추출
- * 2. exclude 제외
- * 3. lowPriority 후순위
- * 4. 전날 선택자가 오늘도 후보면 연속 선택
- * 5. 없으면 오늘부터 가장 긴 연속 근무자 선택
- * 6. 연속 길이 동일하면 staff.txt 순서 fallback
- * 7. 일반 후보 없고 lowPriority만 있으면 선택
- * 8. 후보 없으면 null (수동 확인)
+ * scheduleStore: { "2025-06": { startDate, schedule }, "2025-07": { ... }, ... }
+ * windowStartDate: ISO date string "2025-06-29"
  */
 
-export function runAutoSelection(scheduleData, config) {
-  const { startDate, originalStartDate, schedule } = scheduleData;
+export function runAutoSelection(scheduleStore, windowStartDate, config) {
   const { staff, exclude, lowPriority } = config;
-
-  const names = Object.keys(schedule);
-  const dateCount = 8;
-  const dates = buildDates(startDate, dateCount);
   const shifts = ['D', 'E', 'N'];
-  const offset = daysBetween(originalStartDate || startDate, startDate);
 
-  // 결과: results[dateIndex][shift] = { name, reason, excluded, candidates }
+  // 최대 8일, 데이터 있는 날까지만
+  const isoDates = [];
+  for (let d = 0; d < 8; d++) {
+    const isoDate = addDays(windowStartDate, d);
+    if (!hasScheduleForDate(scheduleStore, isoDate)) break;
+    isoDates.push(isoDate);
+  }
+
+  const dateCount = isoDates.length;
+  if (dateCount === 0) return { dates: [], isoDates: [], results: [] };
+
+  // 전체 스토어에서 인원 이름 수집
+  const allNames = new Set();
+  for (const m of Object.values(scheduleStore)) {
+    for (const n of Object.keys(m.schedule)) allNames.add(n);
+  }
+
   const results = Array.from({ length: dateCount }, () => ({}));
-
-  // 이전 선택 추적 (규칙 4용)
-  const prevSelected = {}; // shift -> name
+  const prevSelected = {};
 
   for (let d = 0; d < dateCount; d++) {
-    const idx = d + offset;
+    const isoDate = isoDates[d];
+    const staffOrdered = staff.filter(n => allNames.has(n));
+
     for (const shift of shifts) {
-      // 이 날짜/근무조에서 근무하는 사람 목록 (staff.txt 순서 기준)
-      const staffOrdered = staff.filter(n => names.includes(n));
-      const allOnShift = staffOrdered.filter(n => schedule[n][idx] === shift);
+      const allOnShift = staffOrdered.filter(n => getShift(scheduleStore, n, isoDate) === shift);
       const excluded = allOnShift.filter(n => exclude.includes(n));
       const candidates = allOnShift.filter(n => !exclude.includes(n));
       const normalCandidates = candidates.filter(n => !lowPriority.includes(n));
@@ -41,11 +40,9 @@ export function runAutoSelection(scheduleData, config) {
 
       let selected = null;
       let reason = '';
-
       const pool = normalCandidates.length > 0 ? normalCandidates : lowCandidates;
 
       if (pool.length === 0) {
-        // 규칙 8
         selected = null;
         reason = '후보 없음 — 수동 확인 필요';
       } else if (pool.length === 1) {
@@ -54,16 +51,14 @@ export function runAutoSelection(scheduleData, config) {
           ? `후순위(${selected})만 존재하여 선택`
           : '단독 후보';
       } else {
-        // 규칙 4: 전날 선택자가 오늘도 후보면 연속
         const prev = prevSelected[shift];
         if (prev && pool.includes(prev)) {
           selected = prev;
           reason = '전날 선택자와 연속됨';
         } else {
-          // 규칙 5: 오늘부터 가장 긴 연속 근무자
           const streaks = pool.map(n => ({
             name: n,
-            streak: calcStreakFrom(schedule[n], shift, idx)
+            streak: calcStreakFrom(scheduleStore, n, shift, isoDate)
           }));
           const maxStreak = Math.max(...streaks.map(s => s.streak));
           const topCandidates = streaks.filter(s => s.streak === maxStreak);
@@ -72,57 +67,68 @@ export function runAutoSelection(scheduleData, config) {
             selected = topCandidates[0].name;
             reason = `오늘부터 가장 긴 연속 근무 (${maxStreak}일)`;
           } else {
-            // 규칙 6: staff.txt 순서 fallback
             const fallback = staffOrdered.find(n => topCandidates.some(t => t.name === n));
-            selected = fallback;
+            selected = fallback ?? null;
             reason = `연속 길이 동일 (${maxStreak}일) — 근무표 순서 우선`;
           }
         }
       }
 
-      results[d][shift] = {
-        date: dates[d],
-        shift,
-        name: selected,
-        reason,
-        candidates: allOnShift,
-        excluded
-      };
-
+      results[d][shift] = { date: formatDateShort(isoDate), shift, name: selected, reason, candidates: allOnShift, excluded };
       prevSelected[shift] = selected;
     }
   }
 
-  return { dates, results };
+  return { dates: isoDates.map(formatDateShort), isoDates, results };
 }
 
-// d번째 날부터 시작하는 연속 근무 길이 계산
-function calcStreakFrom(shiftArr, shift, startIdx) {
+function calcStreakFrom(scheduleStore, name, shift, startIsoDate) {
   let count = 0;
-  for (let i = startIdx; i < shiftArr.length; i++) {
-    if (shiftArr[i] === shift) count++;
-    else break;
+  let d = 0;
+  while (true) {
+    const isoDate = addDays(startIsoDate, d);
+    const s = getShift(scheduleStore, name, isoDate);
+    if (s === undefined || s !== shift) break;
+    count++;
+    d++;
+    if (d > 60) break; // 무한루프 방지
   }
   return count;
 }
 
-function daysBetween(a, b) {
-  const da = new Date(a);
-  const db = new Date(b);
-  da.setHours(0, 0, 0, 0);
-  db.setHours(0, 0, 0, 0);
-  return Math.round((db - da) / 86400000);
+function getShift(scheduleStore, name, isoDate) {
+  const monthKey = isoDate.substring(0, 7);
+  const monthData = scheduleStore[monthKey];
+  if (!monthData || !monthData.schedule[name]) return undefined;
+  const idx = daysBetween(monthData.startDate, isoDate);
+  if (idx < 0) return undefined;
+  return monthData.schedule[name][idx];
 }
 
-function buildDates(startDate, count) {
-  const dates = [];
-  const base = new Date(startDate);
-  for (let i = 0; i < count; i++) {
-    const d = new Date(base);
-    d.setDate(base.getDate() + i);
-    const m = d.getMonth() + 1;
-    const day = d.getDate();
-    dates.push(`${m}/${day}`);
-  }
-  return dates;
+function hasScheduleForDate(scheduleStore, isoDate) {
+  const monthKey = isoDate.substring(0, 7);
+  const monthData = scheduleStore[monthKey];
+  if (!monthData) return false;
+  const idx = daysBetween(monthData.startDate, isoDate);
+  return idx >= 0 && Object.values(monthData.schedule).some(arr => idx < arr.length);
+}
+
+function addDays(isoDateStr, n) {
+  const d = new Date(isoDateStr + 'T00:00:00');
+  d.setDate(d.getDate() + n);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+export function formatDateShort(isoDate) {
+  const [, m, d] = isoDate.split('-');
+  return `${Number(m)}/${Number(d)}`;
+}
+
+function daysBetween(a, b) {
+  const da = new Date(a + 'T00:00:00');
+  const db = new Date(b + 'T00:00:00');
+  return Math.round((db - da) / 86400000);
 }

@@ -1,17 +1,19 @@
-import { runAutoSelection } from "./selectionRules.js";
+import { runAutoSelection, formatDateShort } from "./selectionRules.js";
 const STORAGE_KEYS = {
   schedule: "schedule-copy-helper:schedule",
   config: "schedule-copy-helper:config"
 };
 
 const state = {
-  scheduleData: null,
+  scheduleStore: {},    // { "2025-06": { startDate, schedule }, ... }
+  windowStartDate: null,
   config: {
     staff: [],
     exclude: [],
     lowPriority: []
   },
   dates: [],
+  isoDates: [],
   results: [],
   sequenceSteps: [],
   sequenceIndex: 0
@@ -31,7 +33,8 @@ const els = {
   sequencePanel: document.getElementById("sequence-panel"),
   copyFeedback: document.getElementById("copy-feedback"),
   dateRange: document.getElementById("date-range-display"),
-  startDateInput: document.getElementById("start-date-input")
+  startDateInput: document.getElementById("start-date-input"),
+  loadedMonths: document.getElementById("loaded-months-display")
 };
 
 async function init() {
@@ -39,14 +42,35 @@ async function init() {
   hydrateSettings();
 
   const saved = localStorage.getItem(STORAGE_KEYS.schedule) || localStorage.getItem("lastSchedule");
+  const savedWindowDate = localStorage.getItem("lastStartDate");
+
   if (saved) {
     try {
-      loadSchedule(JSON.parse(saved), false);
-      closeScheduleModal();
-    } catch (error) {
-      els.scheduleJson.value = formatSavedSchedule(saved);
+      const parsed = JSON.parse(saved);
+      const firstValue = parsed && typeof parsed === "object" ? Object.values(parsed)[0] : null;
+
+      if (firstValue?.startDate && firstValue?.schedule) {
+        // 새 스토어 형식
+        state.scheduleStore = parsed;
+      } else if (parsed?.startDate && parsed?.schedule) {
+        // 구 단일 형식 마이그레이션
+        const monthKey = parsed.month || parsed.startDate.substring(0, 7);
+        state.scheduleStore[monthKey] = {
+          startDate: parsed.originalStartDate || parsed.startDate,
+          schedule: parsed.schedule
+        };
+      }
+
+      if (Object.keys(state.scheduleStore).length > 0) {
+        const earliest = Object.values(state.scheduleStore).map(m => m.startDate).sort()[0];
+        state.windowStartDate = savedWindowDate || earliest;
+        rerunSelection();
+        closeScheduleModal();
+      } else {
+        openScheduleModal();
+      }
+    } catch {
       openScheduleModal();
-      els.scheduleFeedback.textContent = error.message;
     }
   } else {
     openScheduleModal();
@@ -132,9 +156,7 @@ function bindEvents() {
 }
 
 function openScheduleModal() {
-  if (state.scheduleData) {
-    els.scheduleJson.value = JSON.stringify(state.scheduleData, null, 2);
-  }
+  els.scheduleJson.value = "";
   els.scheduleFeedback.textContent = "";
   els.scheduleModal.classList.add("open");
 }
@@ -188,15 +210,16 @@ function saveScheduleFromTextarea() {
 
 function loadSchedule(data, persist) {
   validateSchedule(data);
-  state.scheduleData = {
-    ...data,
-    originalStartDate: data.originalStartDate || data.startDate
-  };
-  els.scheduleJson.value = JSON.stringify(data, null, 2);
+  const monthKey = data.month;
+  state.scheduleStore[monthKey] = { startDate: data.startDate, schedule: data.schedule };
+
+  if (!state.windowStartDate) {
+    state.windowStartDate = data.startDate;
+  }
 
   if (persist) {
-    localStorage.setItem(STORAGE_KEYS.schedule, JSON.stringify(data));
-    localStorage.setItem("lastSchedule", JSON.stringify(data));
+    localStorage.setItem(STORAGE_KEYS.schedule, JSON.stringify(state.scheduleStore));
+    localStorage.setItem("lastSchedule", JSON.stringify(state.scheduleStore));
   }
 
   rerunSelection();
@@ -204,44 +227,79 @@ function loadSchedule(data, persist) {
 }
 
 function validateSchedule(data) {
-  if (!data || typeof data !== "object" || !data.startDate || !data.schedule) {
+  if (!data?.month || !data?.startDate || !data?.schedule) {
     throw new Error("month, startDate, schedule 필드가 필요합니다.");
   }
-
-  const maxDays = Math.max(...Object.values(data.schedule).map(shifts => Array.isArray(shifts) ? shifts.length : 0));
+  const maxDays = Math.max(...Object.values(data.schedule).map(arr => Array.isArray(arr) ? arr.length : 0));
   if (maxDays < 8) {
-    throw new Error("시작일부터 최소 8일치 근무표가 필요합니다.");
+    throw new Error("최소 8일치 근무표가 필요합니다.");
   }
 }
 
 function rerunSelection() {
-  if (!state.scheduleData) return;
+  if (!Object.keys(state.scheduleStore).length) return;
 
-  const selection = runAutoSelection(state.scheduleData, state.config);
+  const selection = runAutoSelection(state.scheduleStore, state.windowStartDate, state.config);
   state.dates = selection.dates;
+  state.isoDates = selection.isoDates;
   state.results = selection.results;
   state.sequenceSteps = buildSequenceSteps();
   state.sequenceIndex = 0;
 
-  els.startDateInput.value = state.dates[0] || "";
+  const [, wm, wd] = state.windowStartDate.split("-");
+  els.startDateInput.value = `${Number(wm)}/${Number(wd)}`;
 
   renderSummary();
   renderSchedulePreview();
   renderSequenceCopy();
+  renderLoadedMonths();
 }
 
 function renderSummary() {
-  els.dateRange.textContent = state.dates.length
-    ? `${state.dates[0]} - ${state.dates[state.dates.length - 1]}`
-    : "-";
+  if (!state.dates.length) {
+    els.dateRange.textContent = "해당 날짜 근무표 없음";
+  } else {
+    els.dateRange.textContent = state.dates.length > 1
+      ? `${state.dates[0]} - ${state.dates[state.dates.length - 1]}`
+      : state.dates[0];
+  }
+}
+
+function renderLoadedMonths() {
+  if (!els.loadedMonths) return;
+  const months = Object.keys(state.scheduleStore).sort();
+  if (!months.length) {
+    els.loadedMonths.textContent = "-";
+    return;
+  }
+  els.loadedMonths.innerHTML = months.map(key => {
+    const [, m] = key.split("-");
+    return `<span class="month-chip">${Number(m)}월</span>`;
+  }).join("");
+}
+
+function getShiftFromStore(name, isoDate) {
+  const monthKey = isoDate.substring(0, 7);
+  const monthData = state.scheduleStore[monthKey];
+  if (!monthData || !monthData.schedule[name]) return "off";
+  const idx = isoDateDiff(monthData.startDate, isoDate);
+  return idx >= 0 ? (monthData.schedule[name][idx] || "off") : "off";
+}
+
+function isoDateDiff(a, b) {
+  return Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000);
 }
 
 function renderSchedulePreview() {
-  const schedule = state.scheduleData.schedule;
-  const names = Object.keys(schedule);
+  const allNames = new Set();
+  for (const m of Object.values(state.scheduleStore)) {
+    for (const n of Object.keys(m.schedule)) allNames.add(n);
+  }
+  const names = [...allNames];
+
   const rows = names.map(name => {
-    const cells = state.dates.map((date, index) => {
-      const shift = schedule[name][index] || "off";
+    const cells = state.isoDates.map((isoDate, index) => {
+      const shift = getShiftFromStore(name, isoDate);
       const selected = ["D", "E", "N"].some(s => state.results[index]?.[s]?.name === name);
       return `<td class="shift-${escapeAttr(shift)} ${selected ? "selected-cell" : ""}">${escapeHtml(shift)}</td>`;
     }).join("");
@@ -379,20 +437,16 @@ function toggleSelectionResult() {
 }
 
 function applyStartDateInput() {
-  if (!state.scheduleData) return;
+  if (!Object.keys(state.scheduleStore).length) return;
 
-  const parsed = parseMonthDay(els.startDateInput.value, state.scheduleData.startDate);
+  const refDate = Object.values(state.scheduleStore).map(m => m.startDate).sort()[0];
+  const parsed = parseMonthDay(els.startDateInput.value, refDate);
   if (!parsed) {
     showFeedback("날짜는 6/17 형식으로 입력해 주세요.");
     return;
   }
 
-  state.scheduleData = {
-    ...state.scheduleData,
-    startDate: parsed
-  };
-  localStorage.setItem(STORAGE_KEYS.schedule, JSON.stringify(state.scheduleData));
-  localStorage.setItem("lastSchedule", JSON.stringify(state.scheduleData));
+  state.windowStartDate = parsed;
   localStorage.setItem("lastStartDate", parsed);
   rerunSelection();
 }
@@ -416,10 +470,9 @@ function saveSettings() {
     exclude: parseLines(els.excludeList.value),
     lowPriority: parseLines(els.lowPriorityList.value)
   };
-
   localStorage.setItem(STORAGE_KEYS.config, JSON.stringify(state.config));
   closeSettingsModal();
-  rerunSelection();
+  if (Object.keys(state.scheduleStore).length) rerunSelection();
 }
 
 async function repeatCopyRow(text) {
