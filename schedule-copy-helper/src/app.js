@@ -188,7 +188,10 @@ function saveScheduleFromTextarea() {
 
 function loadSchedule(data, persist) {
   validateSchedule(data);
-  state.scheduleData = data;
+  state.scheduleData = {
+    ...data,
+    originalStartDate: data.originalStartDate || data.startDate
+  };
   els.scheduleJson.value = JSON.stringify(data, null, 2);
 
   if (persist) {

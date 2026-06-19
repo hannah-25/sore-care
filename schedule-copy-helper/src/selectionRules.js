@@ -13,13 +13,14 @@
  */
 
 export function runAutoSelection(scheduleData, config) {
-  const { startDate, schedule } = scheduleData;
+  const { startDate, originalStartDate, schedule } = scheduleData;
   const { staff, exclude, lowPriority } = config;
 
   const names = Object.keys(schedule);
   const dateCount = 8;
   const dates = buildDates(startDate, dateCount);
   const shifts = ['D', 'E', 'N'];
+  const offset = daysBetween(originalStartDate || startDate, startDate);
 
   // 결과: results[dateIndex][shift] = { name, reason, excluded, candidates }
   const results = Array.from({ length: dateCount }, () => ({}));
@@ -28,10 +29,11 @@ export function runAutoSelection(scheduleData, config) {
   const prevSelected = {}; // shift -> name
 
   for (let d = 0; d < dateCount; d++) {
+    const idx = d + offset;
     for (const shift of shifts) {
       // 이 날짜/근무조에서 근무하는 사람 목록 (staff.txt 순서 기준)
       const staffOrdered = staff.filter(n => names.includes(n));
-      const allOnShift = staffOrdered.filter(n => schedule[n][d] === shift);
+      const allOnShift = staffOrdered.filter(n => schedule[n][idx] === shift);
       const excluded = allOnShift.filter(n => exclude.includes(n));
       const candidates = allOnShift.filter(n => !exclude.includes(n));
       const normalCandidates = candidates.filter(n => !lowPriority.includes(n));
@@ -61,7 +63,7 @@ export function runAutoSelection(scheduleData, config) {
           // 규칙 5: 오늘부터 가장 긴 연속 근무자
           const streaks = pool.map(n => ({
             name: n,
-            streak: calcStreakFrom(schedule[n], shift, d)
+            streak: calcStreakFrom(schedule[n], shift, idx)
           }));
           const maxStreak = Math.max(...streaks.map(s => s.streak));
           const topCandidates = streaks.filter(s => s.streak === maxStreak);
@@ -102,6 +104,14 @@ function calcStreakFrom(shiftArr, shift, startIdx) {
     else break;
   }
   return count;
+}
+
+function daysBetween(a, b) {
+  const da = new Date(a);
+  const db = new Date(b);
+  da.setHours(0, 0, 0, 0);
+  db.setHours(0, 0, 0, 0);
+  return Math.round((db - da) / 86400000);
 }
 
 function buildDates(startDate, count) {
