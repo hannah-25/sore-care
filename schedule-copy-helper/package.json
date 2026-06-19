@@ -1,0 +1,15 @@
+{
+  "name": "lab-summary",
+  "version": "1.0.0",
+  "description": "Lab result summary helper",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.0"
+  }
+}
