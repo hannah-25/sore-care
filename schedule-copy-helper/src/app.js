@@ -436,7 +436,7 @@ function toggleSelectionResult() {
   els.selectionToggleLabel.textContent = isHidden ? "접기" : "펼치기";
 }
 
-function applyStartDateInput() {
+async function applyStartDateInput() {
   if (!Object.keys(state.scheduleStore).length) return;
 
   const refDate = Object.values(state.scheduleStore).map(m => m.startDate).sort()[0];
@@ -449,6 +449,12 @@ function applyStartDateInput() {
   state.windowStartDate = parsed;
   localStorage.setItem("lastStartDate", parsed);
   rerunSelection();
+
+  const step = currentSequenceStep();
+  if (step?.name) {
+    await repeatCopyRow(step.name);
+    showFeedback(`${step.name} 복사됨`);
+  }
 }
 
 function parseMonthDay(value, fallbackDate) {
