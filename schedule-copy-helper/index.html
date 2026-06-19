@@ -334,16 +334,16 @@
       transition: background 0.15s, border-color 0.15s;
     }
 
-    .sequence-card.cells-1 {
-      border-left-color: #7ecdc0;
+    .sequence-card.shift-card-D {
+      border-left-color: #5b9bd5;
     }
 
-    .sequence-card.cells-2 {
-      border-left-color: #f4a8bc;
+    .sequence-card.shift-card-E {
+      border-left-color: #d4a020;
     }
 
-    .sequence-card.cells-3 {
-      border-left-color: #e8c96a;
+    .sequence-card.shift-card-N {
+      border-left-color: #8b6bc7;
     }
 
     .sequence-card-head {
@@ -356,11 +356,18 @@
       border-bottom: 1px solid var(--line);
     }
 
+    .sequence-card.shift-card-D .sequence-card-head { background: #eef5ff; }
+    .sequence-card.shift-card-E .sequence-card-head { background: #fffaed; }
+    .sequence-card.shift-card-N .sequence-card-head { background: #f3f0ff; }
+
     .sequence-kicker {
-      color: #274666;
       font-size: 13px;
       font-weight: 800;
     }
+
+    .shift-label-D { color: #2a5c99; }
+    .shift-label-E { color: #7a5200; }
+    .shift-label-N { color: #4a2f8a; }
 
     .sequence-progress {
       color: var(--muted);

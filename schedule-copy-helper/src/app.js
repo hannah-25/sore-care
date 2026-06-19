@@ -324,15 +324,18 @@ function renderSequenceCopy() {
 
   const step = state.sequenceSteps[state.sequenceIndex];
   const displayName = step.name || "수동 확인";
+  const dateRange = step.dates.length > 1
+    ? `${step.dates[0]}~${step.dates[step.dates.length - 1]}`
+    : step.dates[0];
 
   els.sequencePanel.innerHTML = `
-    <div class="sequence-card cells-${step.cellCount}">
+    <div class="sequence-card shift-card-${step.shift}">
       <div class="sequence-card-head">
-        <span class="sequence-kicker">다음 입력</span>
+        <span class="sequence-kicker shift-label-${step.shift}">${escapeHtml(step.shiftLabel)}</span>
         <span class="sequence-progress">${state.sequenceIndex + 1} / ${state.sequenceSteps.length}</span>
       </div>
       <div class="sequence-card-body">
-        <p class="sequence-meta">${escapeHtml(step.shiftLabel)} · <span class="cell-count-badge cell-count-${step.cellCount}">${step.cellCount}칸</span></p>
+        <p class="sequence-meta">${escapeHtml(dateRange)} · <span class="cell-count-badge cell-count-${step.cellCount}">${step.cellCount}칸</span></p>
         <p class="sequence-name">${escapeHtml(displayName)}</p>
         <div class="sequence-actions">
           <button class="btn-primary" id="advance-sequence" type="button">완료 후 다음</button>
