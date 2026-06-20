@@ -383,7 +383,7 @@ function renderSequenceCopy() {
 
   const step = state.sequenceSteps[state.sequenceIndex];
   const isShiftChange = step.shift !== state.prevRenderedShift;
-  const animClass = isShiftChange ? "anim-shift" : "anim-step";
+  const animClass = isShiftChange ? "anim-shift" : "";
   state.prevRenderedShift = step.shift;
 
   const dateRange = step.dates.length > 1
