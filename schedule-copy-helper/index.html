@@ -260,7 +260,24 @@
       color: #2a6aad;
       font-size: 12px;
       font-weight: 800;
+      cursor: pointer;
+      transition: background 0.15s;
     }
+    .month-chip:hover { background: #bcdeff; }
+
+    .schedule-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f9fbfc;
+    }
+    .schedule-row-info { display: flex; flex-direction: column; gap: 3px; }
+    .schedule-row-month { font-size: 16px; font-weight: 800; color: #1f3a52; }
+    .schedule-row-meta { font-size: 12px; color: var(--muted); font-weight: 600; }
 
     .date-input {
       width: 84px;
@@ -746,6 +763,16 @@
         <button class="btn-light" id="close-settings" type="button">닫기</button>
         <button class="btn-primary" id="save-settings" type="button">저장</button>
       </div>
+    </div>
+  </div>
+
+  <div class="modal" id="schedules-modal">
+    <div class="modal-card" style="width:min(480px,100%)" role="dialog" aria-modal="true">
+      <div class="modal-head" style="display:flex;align-items:center;justify-content:space-between">
+        <h2 style="margin:0;font-size:17px;color:#274666">입력된 근무표</h2>
+        <button class="btn-light" id="close-schedules" type="button" style="padding:4px 12px">닫기</button>
+      </div>
+      <div class="modal-body" id="schedules-list" style="padding:12px 18px 18px;display:flex;flex-direction:column;gap:10px"></div>
     </div>
   </div>
 

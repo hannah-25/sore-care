@@ -35,7 +35,9 @@ const els = {
   copyFeedback: document.getElementById("copy-feedback"),
   dateRange: document.getElementById("date-range-display"),
   startDateInput: document.getElementById("start-date-input"),
-  loadedMonths: document.getElementById("loaded-months-display")
+  loadedMonths: document.getElementById("loaded-months-display"),
+  schedulesModal: document.getElementById("schedules-modal"),
+  schedulesList: document.getElementById("schedules-list")
 };
 
 async function init() {
@@ -147,6 +149,9 @@ function bindEvents() {
   document.getElementById("apply-date").addEventListener("click", applyStartDateInput);
 
   document.getElementById("selection-toggle").addEventListener("click", toggleSelectionResult);
+  els.loadedMonths.addEventListener("click", openSchedulesModal);
+  document.getElementById("close-schedules").addEventListener("click", closeSchedulesModal);
+  els.schedulesModal.addEventListener("click", e => { if (e.target === els.schedulesModal) closeSchedulesModal(); });
 
   els.scheduleModal.addEventListener("click", event => {
     if (event.target === els.scheduleModal) closeScheduleModal();
@@ -270,13 +275,79 @@ function renderLoadedMonths() {
   if (!els.loadedMonths) return;
   const months = Object.keys(state.scheduleStore).sort();
   if (!months.length) {
-    els.loadedMonths.textContent = "-";
+    els.loadedMonths.innerHTML = `<span style="color:var(--muted);font-weight:600;font-size:13px">-</span>`;
     return;
   }
   els.loadedMonths.innerHTML = months.map(key => {
     const [, m] = key.split("-");
     return `<span class="month-chip">${Number(m)}월</span>`;
   }).join("");
+}
+
+function openSchedulesModal() {
+  renderSchedulesList();
+  els.schedulesModal.classList.add("open");
+}
+
+function closeSchedulesModal() {
+  els.schedulesModal.classList.remove("open");
+}
+
+function renderSchedulesList() {
+  const months = Object.keys(state.scheduleStore).sort();
+  if (!months.length) {
+    els.schedulesList.innerHTML = `<p style="color:var(--muted);font-size:14px">입력된 근무표가 없습니다.</p>`;
+    return;
+  }
+  els.schedulesList.innerHTML = months.map(key => {
+    const data = state.scheduleStore[key];
+    const [y, m] = key.split("-");
+    const names = Object.keys(data.schedule);
+    const dayCount = Math.max(...names.map(n => data.schedule[n].length));
+    const endDate = addDaysISO(data.startDate, dayCount - 1);
+    const [, em, ed] = endDate.split("-");
+    const [, sm, sd] = data.startDate.split("-");
+    const dateLabel = `${Number(sm)}/${Number(sd)} ~ ${Number(em)}/${Number(ed)}`;
+    return `
+      <div class="schedule-row">
+        <div class="schedule-row-info">
+          <span class="schedule-row-month">${Number(m)}월 <span style="font-size:13px;color:var(--muted);font-weight:600">(${y})</span></span>
+          <span class="schedule-row-meta">${dateLabel} · ${names.length}명 · ${dayCount}일</span>
+        </div>
+        <button class="btn-light" style="color:#c0392b;border-color:#f5c0b8;padding:4px 12px;font-size:12px" data-delete="${escapeAttr(key)}" type="button">삭제</button>
+      </div>
+    `;
+  }).join("");
+
+  els.schedulesList.querySelectorAll("[data-delete]").forEach(btn => {
+    btn.addEventListener("click", () => deleteMonth(btn.dataset.delete));
+  });
+}
+
+function deleteMonth(key) {
+  delete state.scheduleStore[key];
+  localStorage.setItem(STORAGE_KEYS.schedule, JSON.stringify(state.scheduleStore));
+  localStorage.setItem("lastSchedule", JSON.stringify(state.scheduleStore));
+  renderSchedulesList();
+  if (Object.keys(state.scheduleStore).length) {
+    rerunSelection();
+  } else {
+    state.dates = [];
+    state.isoDates = [];
+    state.results = [];
+    state.sequenceSteps = [];
+    state.windowStartDate = null;
+    renderSummary();
+    renderSchedulePreview();
+    renderSequenceCopy();
+    renderLoadedMonths();
+  }
+}
+
+function addDaysISO(isoDateStr, n) {
+  const d = new Date(isoDateStr + "T00:00:00");
+  d.setDate(d.getDate() + n);
+  return d.toISOString().substring(0, 10);
 }
 
 function getShiftFromStore(name, isoDate) {
