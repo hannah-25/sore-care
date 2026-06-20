@@ -445,22 +445,25 @@
     /* 이름 반복 */
     .sequence-names-repeat {
       display: flex;
-      flex-direction: column;
-      gap: 2px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 6px 10px;
       margin: 0 0 18px;
+      align-items: baseline;
     }
 
     .repeat-name {
       color: #102d45;
       font-weight: 800;
       line-height: 1.25;
+      white-space: nowrap;
     }
     .repeat-name.no-name { color: #8fa8be; font-style: italic; }
 
     .sequence-names-repeat.repeat-xl .repeat-name { font-size: 26px; }
-    .sequence-names-repeat.repeat-lg .repeat-name { font-size: 22px; gap: 4px; }
-    .sequence-names-repeat.repeat-md .repeat-name { font-size: 19px; }
-    .sequence-names-repeat.repeat-sm .repeat-name { font-size: 16px; }
+    .sequence-names-repeat.repeat-lg .repeat-name { font-size: 24px; }
+    .sequence-names-repeat.repeat-md .repeat-name { font-size: 21px; }
+    .sequence-names-repeat.repeat-sm .repeat-name { font-size: 18px; }
 
     /* 카드 전환 애니메이션 */
     @keyframes shiftSlideIn {
