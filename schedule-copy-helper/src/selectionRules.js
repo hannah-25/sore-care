@@ -3,13 +3,13 @@
  * windowStartDate: ISO date string "2025-06-29"
  */
 
-export function runAutoSelection(scheduleStore, windowStartDate, config) {
+export function runAutoSelection(scheduleStore, windowStartDate, config, windowSize = 8) {
   const { staff, exclude, lowPriority } = config;
   const shifts = ['D', 'E', 'N'];
 
-  // 최대 8일, 데이터 있는 날까지만
+  // 최대 windowSize일, 데이터 있는 날까지만
   const isoDates = [];
-  for (let d = 0; d < 8; d++) {
+  for (let d = 0; d < windowSize; d++) {
     const isoDate = addDays(windowStartDate, d);
     if (!hasScheduleForDate(scheduleStore, isoDate)) break;
     isoDates.push(isoDate);

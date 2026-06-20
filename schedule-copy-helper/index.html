@@ -309,6 +309,11 @@
       cursor: pointer;
     }
 
+    .window-size-btn {
+      padding: 4px 12px;
+      font-size: 12px;
+    }
+
     .section-body {
       padding: 16px;
     }
@@ -373,9 +378,9 @@
       display: flex;
     }
 
-    .sequence-card.cells-1 { border-left-color: #7ecdc0; }
-    .sequence-card.cells-2 { border-left-color: #f4a8bc; }
-    .sequence-card.cells-3 { border-left-color: #e8c96a; }
+    .sequence-card.shift-D { border-left-color: #7ecdc0; }
+    .sequence-card.shift-E { border-left-color: #f4a8bc; }
+    .sequence-card.shift-N { border-left-color: #e8c96a; }
 
     .shift-strip {
       display: flex;
@@ -424,17 +429,17 @@
       line-height: 1.4;
     }
 
-    .cell-count-1 {
+    .cell-count-D {
       background: #c6ede9;
       color: #2e8a7f;
     }
 
-    .cell-count-2 {
+    .cell-count-E {
       background: #fad4e0;
       color: #b54d70;
     }
 
-    .cell-count-3 {
+    .cell-count-N {
       background: #f7e9b0;
       color: #8a6a00;
     }
@@ -694,10 +699,6 @@
             <span class="date-range" id="date-range-display">-</span>
           </div>
         </div>
-        <div class="date-control">
-          <span class="toolbar-label">입력된 근무표</span>
-          <div id="loaded-months-display" class="loaded-months">-</div>
-        </div>
       </div>
     </section>
 
@@ -712,7 +713,13 @@
     </section>
 
     <section class="panel">
-      <div class="section-title">순차 복사 모드</div>
+      <div class="section-title" style="justify-content:flex-start;gap:10px">
+        <span>순차 복사 모드</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn-primary window-size-btn" data-size="8" type="button">8칸</button>
+          <button class="btn-ghost window-size-btn" data-size="10" type="button">10칸</button>
+        </div>
+      </div>
       <div class="sequence-panel" id="sequence-panel"></div>
       <div style="padding: 0 18px 14px;">
         <div class="copy-feedback" id="copy-feedback"></div>
@@ -726,6 +733,10 @@
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="schedule-modal-title">
       <div class="modal-head">
         <h2 id="schedule-modal-title">근무표 입력</h2>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:700;color:var(--muted)">입력된 근무표</span>
+          <div id="loaded-months-display" class="loaded-months">-</div>
+        </div>
       </div>
       <div class="modal-body">
         <p class="input-guide">월별 근무표를 JSON으로 입력합니다. month, startDate, schedule 필드가 필요합니다. 여러 달을 따로 추가할 수 있습니다.</p>

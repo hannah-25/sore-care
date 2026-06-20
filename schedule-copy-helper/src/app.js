@@ -1,7 +1,8 @@
 import { runAutoSelection, formatDateShort } from "./selectionRules.js";
 const STORAGE_KEYS = {
   schedule: "schedule-copy-helper:schedule",
-  config: "schedule-copy-helper:config"
+  config: "schedule-copy-helper:config",
+  windowSize: "schedule-copy-helper:windowSize"
 };
 
 const state = {
@@ -12,6 +13,7 @@ const state = {
     exclude: [],
     lowPriority: []
   },
+  windowSize: 8,
   dates: [],
   isoDates: [],
   results: [],
@@ -43,6 +45,9 @@ const els = {
 async function init() {
   await loadConfig();
   hydrateSettings();
+  const savedSize = localStorage.getItem(STORAGE_KEYS.windowSize);
+  if (savedSize === "10") state.windowSize = 10;
+  updateWindowSizeButtons();
 
   const saved = localStorage.getItem(STORAGE_KEYS.schedule) || localStorage.getItem("lastSchedule");
   const savedWindowDate = localStorage.getItem("lastStartDate");
@@ -148,6 +153,17 @@ function bindEvents() {
   document.getElementById("save-settings").addEventListener("click", saveSettings);
   document.getElementById("apply-date").addEventListener("click", applyStartDateInput);
 
+  document.querySelectorAll(".window-size-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const size = Number(btn.dataset.size);
+      if (state.windowSize === size) return;
+      state.windowSize = size;
+      localStorage.setItem(STORAGE_KEYS.windowSize, String(size));
+      updateWindowSizeButtons();
+      if (Object.keys(state.scheduleStore).length) rerunSelection();
+    });
+  });
+
   document.getElementById("selection-toggle").addEventListener("click", toggleSelectionResult);
   els.loadedMonths.addEventListener("click", openSchedulesModal);
   document.getElementById("close-schedules").addEventListener("click", closeSchedulesModal);
@@ -245,7 +261,7 @@ function validateSchedule(data) {
 function rerunSelection() {
   if (!Object.keys(state.scheduleStore).length) return;
 
-  const selection = runAutoSelection(state.scheduleStore, state.windowStartDate, state.config);
+  const selection = runAutoSelection(state.scheduleStore, state.windowStartDate, state.config, state.windowSize);
   state.dates = selection.dates;
   state.isoDates = selection.isoDates;
   state.results = selection.results;
@@ -468,11 +484,11 @@ function renderSequenceCopy() {
     : `<span class="repeat-name no-name">수동 확인</span>`;
 
   els.sequencePanel.innerHTML = `
-    <div class="sequence-card cells-${Math.min(count, 3)} ${animClass}">
+    <div class="sequence-card shift-${step.shift} ${animClass}">
       <div class="shift-strip">${escapeHtml(step.shift)}</div>
       <div class="sequence-card-content">
         <div class="sequence-card-body">
-          <p class="sequence-date">${escapeHtml(dateRange)}<span class="cell-count-badge cell-count-${Math.min(count, 3)}">${count}칸</span></p>
+          <p class="sequence-date">${escapeHtml(dateRange)}<span class="cell-count-badge cell-count-${step.shift}">${count}칸</span></p>
           <div class="sequence-names-repeat ${sizeClass}">${nameLines}</div>
           <div class="sequence-actions">
             <button class="btn-primary" id="advance-sequence" type="button">완료 후 다음</button>
@@ -507,6 +523,14 @@ async function advanceSequence() {
   }
 }
 
+
+function updateWindowSizeButtons() {
+  document.querySelectorAll(".window-size-btn").forEach(btn => {
+    const active = Number(btn.dataset.size) === state.windowSize;
+    btn.classList.toggle("btn-primary", active);
+    btn.classList.toggle("btn-ghost", !active);
+  });
+}
 
 function toggleSelectionResult() {
   const isHidden = els.selectionBody.style.display === "none";
