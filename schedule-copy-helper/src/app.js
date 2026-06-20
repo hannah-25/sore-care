@@ -16,7 +16,8 @@ const state = {
   isoDates: [],
   results: [],
   sequenceSteps: [],
-  sequenceIndex: 0
+  sequenceIndex: 0,
+  prevRenderedShift: null
 };
 
 const els = {
@@ -365,13 +366,10 @@ function buildSequenceSteps() {
 
 function renderSequenceCopy() {
   if (!state.sequenceSteps.length) {
+    state.prevRenderedShift = null;
     els.sequencePanel.innerHTML = `
       <div class="sequence-card">
-        <div class="sequence-card-head">
-          <span class="sequence-kicker">다음 입력</span>
-          <span class="sequence-progress">0 / 0</span>
-        </div>
-        <div class="sequence-card-body">
+        <div class="sequence-card-body" style="padding:18px 15px 16px">
           <p class="sequence-meta">근무표를 먼저 입력해 주세요.</p>
         </div>
       </div>
@@ -384,18 +382,27 @@ function renderSequenceCopy() {
   }
 
   const step = state.sequenceSteps[state.sequenceIndex];
-  const displayName = step.name || "수동 확인";
+  const isShiftChange = step.shift !== state.prevRenderedShift;
+  const animClass = isShiftChange ? "anim-shift" : "anim-step";
+  state.prevRenderedShift = step.shift;
+
   const dateRange = step.dates.length > 1
     ? `${step.dates[0]}~${step.dates[step.dates.length - 1]}`
     : step.dates[0];
 
+  const count = step.cellCount;
+  const sizeClass = count >= 6 ? "repeat-sm" : count >= 4 ? "repeat-md" : count >= 2 ? "repeat-lg" : "repeat-xl";
+  const nameLines = step.name
+    ? Array(count).fill(null).map(() => `<span class="repeat-name">${escapeHtml(step.name)}</span>`).join("")
+    : `<span class="repeat-name no-name">수동 확인</span>`;
+
   els.sequencePanel.innerHTML = `
-    <div class="sequence-card cells-${Math.min(step.cellCount, 3)}">
+    <div class="sequence-card cells-${Math.min(count, 3)} ${animClass}">
       <div class="shift-strip">${escapeHtml(step.shift)}</div>
       <div class="sequence-card-content">
         <div class="sequence-card-body">
-          <p class="sequence-date">${escapeHtml(dateRange)}<span class="cell-count-badge cell-count-${Math.min(step.cellCount, 3)}">${step.cellCount}칸</span></p>
-          <p class="sequence-name">${escapeHtml(displayName)}</p>
+          <p class="sequence-date">${escapeHtml(dateRange)}<span class="cell-count-badge cell-count-${Math.min(count, 3)}">${count}칸</span></p>
+          <div class="sequence-names-repeat ${sizeClass}">${nameLines}</div>
           <div class="sequence-actions">
             <button class="btn-primary" id="advance-sequence" type="button">완료 후 다음</button>
           </div>

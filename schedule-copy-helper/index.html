@@ -442,6 +442,43 @@
       font-weight: 800;
     }
 
+    /* 이름 반복 */
+    .sequence-names-repeat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin: 0 0 18px;
+    }
+
+    .repeat-name {
+      color: #102d45;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+    .repeat-name.no-name { color: #8fa8be; font-style: italic; }
+
+    .sequence-names-repeat.repeat-xl .repeat-name { font-size: 26px; }
+    .sequence-names-repeat.repeat-lg .repeat-name { font-size: 22px; gap: 4px; }
+    .sequence-names-repeat.repeat-md .repeat-name { font-size: 19px; }
+    .sequence-names-repeat.repeat-sm .repeat-name { font-size: 16px; }
+
+    /* 카드 전환 애니메이션 */
+    @keyframes shiftSlideIn {
+      from { opacity: 0; transform: translateX(36px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes stepFadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .sequence-card.anim-shift {
+      animation: shiftSlideIn 0.32s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+    }
+    .sequence-card.anim-step {
+      animation: stepFadeUp 0.18s ease-out both;
+    }
+
     .sequence-actions {
       display: flex;
       flex-wrap: wrap;
