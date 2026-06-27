@@ -1,3 +1,4 @@
 node_modules/
 *.log
 .env
+schedule-copy-helper/data/schedules/index.json
