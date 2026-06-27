@@ -4,6 +4,7 @@
   "description": "Lab result summary helper",
   "main": "server.js",
   "scripts": {
+    "build:schedules": "node scripts/generate-schedule-manifest.mjs",
     "start": "node server.js"
   },
   "dependencies": {

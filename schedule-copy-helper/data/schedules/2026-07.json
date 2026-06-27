@@ -1,0 +1,19 @@
+{
+  "month": "2026-07",
+  "startDate": "2026-07-01",
+  "schedule": {
+    "이주연": ["D", "D", "D", "off", "off", "D", "D", "D", "D", "off", "off", "off", "D", "D", "D", "D", "off", "D", "D", "D", "off", "D", "D", "D", "off", "D", "D", "D", "off", "D", "D"],
+    "조민지": ["D", "E", "off", "D", "D", "E", "off", "off", "D", "D", "D", "D", "off", "E", "E", "E", "off", "off", "E", "E", "E", "off", "E", "E", "E", "E", "off", "off", "D", "D", "E"],
+    "이미경": ["off", "D", "D", "D", "E", "off", "E", "E", "E", "E", "off", "D", "D", "D", "D", "off", "D", "E", "E", "off", "D", "E", "E", "연11", "off", "off", "off", "E", "E", "E", "off"],
+    "강진영": ["N", "off", "연3", "off", "D", "D", "D", "off", "N", "N", "off", "off", "E", "E", "E", "off", "E", "N", "N", "off", "off", "D", "D", "D", "D", "off", "E", "E", "N", "N", "N"],
+    "선민주": ["E", "연5", "E", "E", "N", "N", "off", "off", "E", "E", "E", "E", "off", "N", "N", "N", "off", "off", "D", "D", "D", "off", "N", "N", "N", "off", "off", "D", "D", "off", "D"],
+    "박형희": ["E", "E", "E", "off", "off", "E", "E", "E", "off", "off", "E", "E", "E", "off", "off", "E", "E", "E", "off", "E", "E", "E", "off", "E", "E", "E", "E", "off", "E", "E", "E"],
+    "양지은": ["D", "D", "D", "off", "D", "D", "D", "off", "E", "E", "E", "off", "off", "D", "D", "E", "E", "E", "off", "off", "D", "D", "D", "D", "off", "E", "E", "E", "off", "off", "D"],
+    "정소민": ["", "", "", "E", "E", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+    "오선혜": ["", "", "", "", "", "", "", "D", "", "D", "D", "", "", "", "", "D", "D", "D", "", "", "", "", "", "", "D", "D", "D", "", "", "", ""],
+    "정해주": ["off", "N", "N", "N", "off", "off", "N", "N", "off", "off", "N", "N", "N", "off", "off", "off", "N", "N", "off", "off", "연4", "N", "N", "N", "off", "off", "off", "N", "N", "off", "off"],
+    "문진영": ["off", "off", "N", "N", "N", "off", "off", "N", "N", "off", "off", "off", "N", "N", "N", "off", "off", "off", "N", "N", "N", "off", "off", "off", "N", "N", "N", "off", "off", "N", "N"],
+    "우창희": ["N", "N", "off", "off", "off", "N", "N", "off", "off", "N", "N", "N", "off", "off", "off", "N", "N", "off", "off", "N", "N", "N", "off", "연3", "off", "N", "N", "N", "off", "off", "off"],
+    "양윤경": ["M", "M", "M", "off", "off", "M", "M", "M", "M", "M", "off", "off", "M", "M", "M", "M", "off", "off", "off", "M", "M", "M", "M", "M", "off", "off", "M", "M", "M", "M", "M"]
+  }
+}

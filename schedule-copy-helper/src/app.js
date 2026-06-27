@@ -4,9 +4,14 @@ const STORAGE_KEYS = {
   config: "schedule-copy-helper:config",
   windowSize: "schedule-copy-helper:windowSize"
 };
+const BUNDLED_SCHEDULE_MANIFEST = "data/schedules/index.json";
+const MIN_WINDOW_SIZE = 1;
+const MAX_WINDOW_SIZE = 31;
 
 const state = {
   scheduleStore: {},    // { "2025-06": { startDate, schedule }, ... }
+  bundledScheduleStore: {},
+  localScheduleStore: {},
   windowStartDate: null,
   config: {
     staff: [],
@@ -37,6 +42,7 @@ const els = {
   copyFeedback: document.getElementById("copy-feedback"),
   dateRange: document.getElementById("date-range-display"),
   startDateInput: document.getElementById("start-date-input"),
+  customWindowSize: document.getElementById("custom-window-size"),
   loadedMonths: document.getElementById("loaded-months-display"),
   schedulesModal: document.getElementById("schedules-modal"),
   schedulesList: document.getElementById("schedules-list")
@@ -46,45 +52,101 @@ async function init() {
   await loadConfig();
   hydrateSettings();
   const savedSize = localStorage.getItem(STORAGE_KEYS.windowSize);
-  if (savedSize === "10") state.windowSize = 10;
+  const parsedSavedSize = parseWindowSize(savedSize);
+  if (parsedSavedSize) state.windowSize = parsedSavedSize;
   updateWindowSizeButtons();
 
-  const saved = localStorage.getItem(STORAGE_KEYS.schedule) || localStorage.getItem("lastSchedule");
-  const savedWindowDate = localStorage.getItem("lastStartDate");
+  await loadBundledSchedules();
+  loadSavedSchedules();
 
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      const firstValue = parsed && typeof parsed === "object" ? Object.values(parsed)[0] : null;
-
-      if (firstValue?.startDate && firstValue?.schedule) {
-        // 새 스토어 형식
-        state.scheduleStore = parsed;
-      } else if (parsed?.startDate && parsed?.schedule) {
-        // 구 단일 형식 마이그레이션
-        const monthKey = parsed.month || parsed.startDate.substring(0, 7);
-        state.scheduleStore[monthKey] = {
-          startDate: parsed.originalStartDate || parsed.startDate,
-          schedule: parsed.schedule
-        };
-      }
-
-      if (Object.keys(state.scheduleStore).length > 0) {
-        const earliest = Object.values(state.scheduleStore).map(m => m.startDate).sort()[0];
-        state.windowStartDate = savedWindowDate || earliest;
-        rerunSelection();
-        closeScheduleModal();
-      } else {
-        openScheduleModal();
-      }
-    } catch {
-      openScheduleModal();
-    }
+  if (Object.keys(state.scheduleStore).length > 0) {
+    const savedWindowDate = localStorage.getItem("lastStartDate");
+    const earliest = Object.values(state.scheduleStore).map(m => m.startDate).sort()[0];
+    state.windowStartDate = savedWindowDate || earliest;
+    rerunSelection();
+    closeScheduleModal();
   } else {
     openScheduleModal();
   }
 
   bindEvents();
+}
+
+function loadSavedSchedules() {
+  const saved = localStorage.getItem(STORAGE_KEYS.schedule) || localStorage.getItem("lastSchedule");
+
+  if (!saved) {
+    rebuildScheduleStore();
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(saved);
+    const firstValue = parsed && typeof parsed === "object" ? Object.values(parsed)[0] : null;
+
+    if (firstValue?.startDate && firstValue?.schedule) {
+      state.localScheduleStore = parsed;
+    } else if (parsed?.startDate && parsed?.schedule) {
+      const monthKey = parsed.month || parsed.startDate.substring(0, 7);
+      state.localScheduleStore[monthKey] = {
+        startDate: parsed.originalStartDate || parsed.startDate,
+        schedule: parsed.schedule
+      };
+    }
+  } catch {
+    localStorage.removeItem(STORAGE_KEYS.schedule);
+  }
+
+  rebuildScheduleStore();
+}
+
+async function loadBundledSchedules() {
+  const files = await fetchJson(BUNDLED_SCHEDULE_MANIFEST);
+  if (!Array.isArray(files)) {
+    rebuildScheduleStore();
+    return;
+  }
+
+  const loaded = await Promise.all(files.map(async file => {
+    if (typeof file !== "string" || !file.endsWith(".json")) return null;
+    return fetchJson(`data/schedules/${encodeURIComponent(file)}`);
+  }));
+
+  for (const data of loaded) {
+    try {
+      if (!data) continue;
+      validateSchedule(data);
+      state.bundledScheduleStore[data.month] = {
+        startDate: data.startDate,
+        schedule: data.schedule
+      };
+    } catch {
+      // Ignore invalid bundled files so one bad schedule does not block the app.
+    }
+  }
+
+  rebuildScheduleStore();
+}
+
+async function fetchJson(url) {
+  try {
+    const res = await fetch(url);
+    return res.ok ? res.json() : null;
+  } catch {
+    return null;
+  }
+}
+
+function rebuildScheduleStore() {
+  state.scheduleStore = {
+    ...state.bundledScheduleStore,
+    ...state.localScheduleStore
+  };
+}
+
+function persistLocalSchedules() {
+  localStorage.setItem(STORAGE_KEYS.schedule, JSON.stringify(state.localScheduleStore));
+  localStorage.setItem("lastSchedule", JSON.stringify(state.localScheduleStore));
 }
 
 function formatSavedSchedule(saved) {
@@ -156,12 +218,23 @@ function bindEvents() {
   document.querySelectorAll(".window-size-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const size = Number(btn.dataset.size);
-      if (state.windowSize === size) return;
-      state.windowSize = size;
-      localStorage.setItem(STORAGE_KEYS.windowSize, String(size));
-      updateWindowSizeButtons();
-      if (Object.keys(state.scheduleStore).length) rerunSelection();
+      applyWindowSize(size);
     });
+  });
+  els.customWindowSize?.addEventListener("change", () => {
+    const size = parseWindowSize(els.customWindowSize.value);
+    if (!size) {
+      els.customWindowSize.value = String(state.windowSize);
+      showFeedback(`칸수는 ${MIN_WINDOW_SIZE}~${MAX_WINDOW_SIZE} 사이 숫자로 입력해 주세요.`);
+      return;
+    }
+    applyWindowSize(size);
+  });
+  els.customWindowSize?.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      els.customWindowSize.blur();
+    }
   });
 
   document.getElementById("selection-toggle").addEventListener("click", toggleSelectionResult);
@@ -233,15 +306,15 @@ function saveScheduleFromTextarea() {
 function loadSchedule(data, persist) {
   validateSchedule(data);
   const monthKey = data.month;
-  state.scheduleStore[monthKey] = { startDate: data.startDate, schedule: data.schedule };
+  state.localScheduleStore[monthKey] = { startDate: data.startDate, schedule: data.schedule };
+  rebuildScheduleStore();
 
   if (!state.windowStartDate) {
     state.windowStartDate = data.startDate;
   }
 
   if (persist) {
-    localStorage.setItem(STORAGE_KEYS.schedule, JSON.stringify(state.scheduleStore));
-    localStorage.setItem("lastSchedule", JSON.stringify(state.scheduleStore));
+    persistLocalSchedules();
   }
 
   rerunSelection();
@@ -341,9 +414,10 @@ function renderSchedulesList() {
 }
 
 function deleteMonth(key) {
-  delete state.scheduleStore[key];
-  localStorage.setItem(STORAGE_KEYS.schedule, JSON.stringify(state.scheduleStore));
-  localStorage.setItem("lastSchedule", JSON.stringify(state.scheduleStore));
+  delete state.localScheduleStore[key];
+  delete state.bundledScheduleStore[key];
+  rebuildScheduleStore();
+  persistLocalSchedules();
   renderSchedulesList();
   if (Object.keys(state.scheduleStore).length) {
     rerunSelection();
@@ -530,6 +604,28 @@ function updateWindowSizeButtons() {
     btn.classList.toggle("btn-primary", active);
     btn.classList.toggle("btn-ghost", !active);
   });
+  if (els.customWindowSize) {
+    els.customWindowSize.value = String(state.windowSize);
+  }
+}
+
+function applyWindowSize(size) {
+  const parsedSize = parseWindowSize(size);
+  if (!parsedSize || state.windowSize === parsedSize) {
+    updateWindowSizeButtons();
+    return;
+  }
+
+  state.windowSize = parsedSize;
+  localStorage.setItem(STORAGE_KEYS.windowSize, String(parsedSize));
+  updateWindowSizeButtons();
+  if (Object.keys(state.scheduleStore).length) rerunSelection();
+}
+
+function parseWindowSize(value) {
+  const size = Number(value);
+  if (!Number.isInteger(size) || size < MIN_WINDOW_SIZE || size > MAX_WINDOW_SIZE) return null;
+  return size;
 }
 
 function toggleSelectionResult() {
