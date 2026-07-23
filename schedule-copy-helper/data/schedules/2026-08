@@ -1,0 +1,17 @@
+{
+  "month": "2026-08",
+  "startDate": "2026-08-01",
+  "schedule": {
+    "이주연": [ "off", "D", "D", "D", "D", "D", "off", "D", "D", "off", "D", "D", "off", "D", "D", "D", "D", "off", "D", "D", "D", "D", "off", "off", "D", "D", "off", "D", "D", "off", "off", "D" ],
+    "조민지": [ "E", "off", "E", "E", "off", "D", "E", "E", "off", "off", "D", "D", "D", "off", "off", "off", "D", "D", "D", "E", "off", "D", "D", "D", "D", "D", "off", "off", "E", "E", "E" ],
+    "이미경": [ "D", "off", "off", "off", "off", "D", "D", "D", "D", "off", "E", "E", "E", "E", "off", "D", "D", "off", "E", "E", "E", "E", "off", "off", "E", "E", "E", "off", "D", "D", "off" ],
+    "강진영": [ "off", "off", "D", "D", "E", "E", "E", "off", "E", "E", "off", "D", "N", "N", "N", "off", "off", "E", "N", "N", "off", "off", "off", "E", "E", "N", "off", "E", "E", "off", "E" ],
+    "선민주": [ "E", "E", "N", "off", "off", "N", "N", "off", "off", "N", "N", "off", "off", "D", "E", "E", "E", "off", "off", "D", "D", "D", "E", "off", "off", "D", "D", "E", "off", "N", "N" ],
+    "박형희": [ "off", "E", "E", "E", "E", "off", "off", "E", "E", "E", "off", "off", "E", "E", "E", "off", "off", "E", "E", "off", "E", "E", "E", "E", "off", "E", "E", "off", "E", "E", "off" ],
+    "양지은": [ "D", "D", "off", "off", "D", "E", "off", "off", "D", "D", "E", "E", "off", "off", "D", "E", "E", "off", "N", "N", "off", "off", "D", "N", "N", "off", "off", "D", "D", "D", "D" ],
+    "정해주": [ "off", "N", "N", "N", "off", "off", "off", "N", "N", "N", "연4", "off", "off", "off", "N", "N", "N", "off", "off", "N", "N", "N", "off", "off", "off", "N", "N", "N", "off", "off", "off" ],
+    "문진영": [ "N", "off", "off", "N", "N", "off", "off", "N", "N", "off", "off", "N", "N", "N", "off", "off", "off", "N", "N", "off", "off", "off", "N", "N", "N", "off", "off", "off", "N", "N", "N" ],
+    "우창희": [ "N", "N", "off", "off", "N", "N", "N", "off", "off", "off", "N", "N", "off", "off", "off", "N", "N", "N", "off", "off", "N", "N", "N", "off", "off", "off", "N", "N", "N", "off", "off" ],
+    "양윤경": [ "off", "off", "M", "M", "M", "M", "M", "off", "off", "off", "M", "M", "M", "M", "off", "off", "M", "off", "M", "M", "연3", "연4", "off", "off", "M", "M", "M", "M", "M", "off", "off" ]
+  }
+}
