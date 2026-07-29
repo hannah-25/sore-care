@@ -138,10 +138,13 @@ async function fetchJson(url) {
 }
 
 function rebuildScheduleStore() {
-  state.scheduleStore = {
-    ...state.bundledScheduleStore,
-    ...state.localScheduleStore
-  };
+  state.scheduleStore = { ...state.bundledScheduleStore };
+  for (const [month, schedule] of Object.entries(state.localScheduleStore)) {
+    // Legacy cached schedules have no source marker; let deployed data replace them.
+    if (!state.bundledScheduleStore[month] || schedule.source === "manual") {
+      state.scheduleStore[month] = schedule;
+    }
+  }
 }
 
 function persistLocalSchedules() {
@@ -306,7 +309,7 @@ function saveScheduleFromTextarea() {
 function loadSchedule(data, persist) {
   validateSchedule(data);
   const monthKey = data.month;
-  state.localScheduleStore[monthKey] = { startDate: data.startDate, schedule: data.schedule };
+  state.localScheduleStore[monthKey] = { startDate: data.startDate, schedule: data.schedule, source: "manual" };
   rebuildScheduleStore();
 
   if (!state.windowStartDate) {
