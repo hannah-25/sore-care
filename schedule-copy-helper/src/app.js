@@ -22,7 +22,9 @@ const state = {
   results: [],
   sequenceSteps: [],
   sequenceIndex: 0,
-  prevRenderedShift: null
+  prevRenderedShift: null,
+  editorMonth: null,
+  editorSchedule: null
 };
 
 const els = {
@@ -43,7 +45,13 @@ const els = {
   customWindowSize: document.getElementById("custom-window-size"),
   loadedMonths: document.getElementById("loaded-months-display"),
   schedulesModal: document.getElementById("schedules-modal"),
-  schedulesList: document.getElementById("schedules-list")
+  schedulesList: document.getElementById("schedules-list"),
+  scheduleEditorModal: document.getElementById("schedule-editor-modal"),
+  editorMonth: document.getElementById("editor-month"),
+  editorGrid: document.getElementById("editor-grid"),
+  editorFeedback: document.getElementById("editor-feedback"),
+  editorStaffName: document.getElementById("editor-staff-name"),
+  editorStartDate: document.getElementById("editor-start-date")
 };
 
 async function init() {
@@ -143,6 +151,7 @@ function bindEvents() {
     document.getElementById("import-file-input").click();
   });
   document.getElementById("import-file-input").addEventListener("change", importScheduleFile);
+  document.getElementById("copy-gemini-prompt").addEventListener("click", copyGeminiPrompt);
   document.getElementById("save-schedule").addEventListener("click", saveScheduleFromTextarea);
   document.getElementById("open-settings").addEventListener("click", openSettingsModal);
   document.getElementById("close-settings").addEventListener("click", closeSettingsModal);
@@ -174,7 +183,19 @@ function bindEvents() {
   document.getElementById("selection-toggle").addEventListener("click", toggleSelectionResult);
   els.loadedMonths.addEventListener("click", openSchedulesModal);
   document.getElementById("close-schedules").addEventListener("click", closeSchedulesModal);
+  document.getElementById("close-schedule-editor").addEventListener("click", closeScheduleEditor);
+  document.getElementById("save-schedule-editor").addEventListener("click", saveScheduleEditor);
+  document.getElementById("add-editor-staff").addEventListener("click", addEditorStaff);
+  els.editorMonth.addEventListener("change", () => loadEditorMonth(els.editorMonth.value));
+  els.editorStartDate.addEventListener("change", () => {
+    if (state.editorSchedule && els.editorStartDate.value) {
+      state.editorSchedule.startDate = els.editorStartDate.value;
+      renderScheduleEditor();
+    }
+  });
   els.schedulesModal.addEventListener("click", e => { if (e.target === els.schedulesModal) closeSchedulesModal(); });
+  els.scheduleEditorModal.addEventListener("click", e => { if (e.target === els.scheduleEditorModal) closeScheduleEditor(); });
+  window.addEventListener("resize", fitScheduleEditor);
 
   els.scheduleModal.addEventListener("click", event => {
     if (event.target === els.scheduleModal) closeScheduleModal();
@@ -220,6 +241,63 @@ function importScheduleFile(event) {
     }
   };
   reader.readAsText(file);
+}
+
+async function copyGeminiPrompt() {
+  const staff = state.config.staff.length ? state.config.staff.join(", ") : "등록된 직원 명단 없음";
+  const prompt = `[역할]
+당신은 병원 간호부 근무표 이미지에서 날짜별 근무 데이터를 한 치의 오차 없이 추출하는 데이터 분석 전문가입니다.
+
+[작업 목적]
+첨부된 근무표 이미지의 표(Grid)를 읽고, 각 직원별 1일부터 말일까지의 근무 데이터를 수직 정렬의 틀어짐 없이 정확히 추출하여 JSON으로 변환합니다.
+
+[참고 명단]
+[${staff}]
+
+[작업 순서]
+
+시각적 기준점(Anchor) 확보:
+표에서 색상으로 칠해진 주말(토, 일) 칸이 며칠인지 먼저 파악하세요.
+날짜 헤더(1~31일)와 각 직원의 행이 만나는 수직축을 읽어 내려갈 때, 이 주말 색상 칸을 잣대 삼아 열이 밀리지 않도록 기준을 잡으세요.
+
+중간 기준일(Milestone) 교차 검증 브리핑:
+수직 정렬 오류(Off-by-one error)를 막기 위해, 본격적인 추출 전 모든 직원의 10일, 20일, 30일 근무 코드를 먼저 읽어내어 텍스트로 짧게 브리핑하세요.
+브리핑 예시: "OOO - 10일: D, 20일: off, 30일: N"
+
+전체 날짜 매핑 및 특이사항 점검:
+각 직원별로 1일부터 말일까지 차례대로 매핑합니다.
+규정된 근무 코드(D, E, N, M, S, off)가 아닌 다른 글자(예: 연1, 연3 등 연차 표기)가 있거나, 정렬이 애매해서 확신이 서지 않는 칸은 임의로 추측하지 마세요. 브리핑에 "OOO 며칠: 확인 필요 (사유)"라고 명시하세요.
+
+최종 JSON 출력:
+위 1~3단계의 검증이 끝난 후, 최종 결과물만 아래 JSON 형식으로 출력하세요.
+startDate는 해당 월의 1일 날짜로 기재하세요. (예: "2026-08-01")
+각 직원의 근무 데이터는 배열(Array) 형태로 작성하며, 배열의 첫 번째 값(index 0)이 1일, 두 번째 값이 2일의 근무가 되도록 순서대로 나열하세요.
+
+[JSON 형식]
+{
+"month": "YYYY-MM",
+"startDate": "YYYY-MM-DD",
+"schedule": {
+"직원명1": ["D", "E", "N", "M", "S", "off", ...],
+"직원명2": ["off", "D", "D", "N", "off", "D", ...]
+}
+}
+
+[규칙]
+
+근무 코드는 D, E, N, M, S, off 만 사용합니다.
+규정 외의 표기가 있거나 해독이 불확실한 날짜는 JSON 값에도 반드시 "확인 필요"라고 적습니다.`;
+  try {
+    await navigator.clipboard.writeText(prompt);
+  } catch {
+    const textarea = document.createElement("textarea");
+    textarea.value = prompt;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    textarea.remove();
+  }
+  els.scheduleFeedback.textContent = "Gemini 프롬프트를 복사했습니다. 사진과 함께 Gemini에 붙여 넣으세요.";
 }
 
 function saveScheduleFromTextarea() {
@@ -316,6 +394,158 @@ function closeSchedulesModal() {
   els.schedulesModal.classList.remove("open");
 }
 
+function openScheduleEditor(initialMonth) {
+  const months = Object.keys(state.localScheduleStore).sort();
+  if (!months.length) {
+    openScheduleModal();
+    els.scheduleFeedback.textContent = "먼저 JSON으로 근무표를 가져와 주세요.";
+    return;
+  }
+  els.editorMonth.innerHTML = months.map(month => `<option value="${escapeAttr(month)}">${escapeHtml(month)}</option>`).join("");
+  loadEditorMonth(months.includes(initialMonth) ? initialMonth : months[0]);
+  els.scheduleEditorModal.classList.add("open");
+}
+
+function closeScheduleEditor() {
+  els.scheduleEditorModal.classList.remove("open");
+  state.editorMonth = null;
+  state.editorSchedule = null;
+}
+
+function loadEditorMonth(month) {
+  const schedule = state.localScheduleStore[month];
+  if (!schedule) return;
+  state.editorMonth = month;
+  state.editorSchedule = JSON.parse(JSON.stringify({ month, ...schedule }));
+  els.editorMonth.value = month;
+  els.editorStartDate.value = state.editorSchedule.startDate;
+  els.editorFeedback.textContent = "";
+  renderScheduleEditor();
+}
+
+function renderScheduleEditor() {
+  const data = state.editorSchedule;
+  if (!data) return;
+  const names = Object.keys(data.schedule);
+  const dayCount = Math.max(8, ...names.map(name => data.schedule[name].length));
+  const dates = Array.from({ length: dayCount }, (_, index) => formatDateShort(addDaysISO(data.startDate, index)));
+
+  els.editorGrid.innerHTML = `
+    <table class="schedule-table" style="font-size:12px;min-width:max-content">
+      <thead><tr><th style="position:sticky;left:0;background:#f7fbff;z-index:1">직원</th>${dates.map(date => `<th>${date}</th>`).join("")}<th>관리</th></tr></thead>
+      <tbody>${names.map((name, row) => `
+        <tr>
+          <td class="name-cell" style="position:sticky;left:0;background:#fff;z-index:1"><input class="editor-name" data-row="${row}" value="${escapeHtml(name)}" aria-label="직원 이름"></td>
+          ${Array.from({ length: dayCount }, (_, day) => `<td><input class="editor-shift shift-${escapeAttr(data.schedule[name][day] || "off")}" data-row="${row}" data-day="${day}" value="${escapeAttr(data.schedule[name][day] || "off")}" maxlength="3" aria-label="${escapeAttr(name)} ${dates[day]} 근무"></td>`).join("")}
+          <td><button class="btn-light editor-delete" data-row="${row}" type="button" style="color:#c0392b;padding:3px 8px">삭제</button></td>
+        </tr>`).join("")}</tbody>
+    </table>`;
+
+  els.editorGrid.querySelectorAll(".editor-shift").forEach(input => {
+    input.addEventListener("keydown", event => handleEditorShiftKey(event, input));
+    input.addEventListener("blur", () => setEditorShift(input, input.value));
+  });
+  els.editorGrid.querySelectorAll(".editor-name").forEach(input => {
+    input.addEventListener("change", () => renameEditorStaff(Number(input.dataset.row), input.value));
+  });
+  els.editorGrid.querySelectorAll(".editor-delete").forEach(button => {
+    button.addEventListener("click", () => {
+      delete data.schedule[Object.keys(data.schedule)[Number(button.dataset.row)]];
+      renderScheduleEditor();
+    });
+  });
+  els.editorGrid.querySelector(".editor-shift")?.focus();
+  requestAnimationFrame(fitScheduleEditor);
+}
+
+function fitScheduleEditor() {
+  const table = els.editorGrid.querySelector("table");
+  if (!table || !els.scheduleEditorModal.classList.contains("open")) return;
+  table.style.zoom = "1";
+  const availableWidth = els.editorGrid.clientWidth;
+  const availableHeight = Math.max(1, window.innerHeight - 220);
+  const scale = Math.min(1, availableWidth / table.scrollWidth, availableHeight / table.scrollHeight);
+  table.style.zoom = String(scale);
+}
+
+function handleEditorShiftKey(event, input) {
+  const shift = { d: "D", e: "E", n: "N", m: "M", s: "S", o: "off" }[event.key.toLowerCase()];
+  const row = Number(input.dataset.row);
+  const day = Number(input.dataset.day);
+  if (shift) {
+    event.preventDefault();
+    setEditorShift(input, shift);
+    focusEditorShift(row, day + 1);
+    return;
+  }
+  const moves = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0], Enter: [1, 0] };
+  if (moves[event.key]) {
+    event.preventDefault();
+    focusEditorShift(row + moves[event.key][0], day + moves[event.key][1]);
+  }
+}
+
+function setEditorShift(input, value) {
+  const shift = value.toLowerCase() === "off" || value.toLowerCase() === "o" ? "off" : value.toUpperCase();
+  if (!["D", "E", "N", "M", "S", "off"].includes(shift)) {
+    setEditorShift(input, "off");
+    return;
+  }
+  const name = Object.keys(state.editorSchedule.schedule)[Number(input.dataset.row)];
+  state.editorSchedule.schedule[name][Number(input.dataset.day)] = shift;
+  input.value = shift;
+  input.className = `editor-shift shift-${escapeAttr(shift)}`;
+}
+
+function focusEditorShift(row, day) {
+  const input = els.editorGrid.querySelector(`.editor-shift[data-row="${row}"][data-day="${day}"]`);
+  if (input) input.focus();
+}
+
+function renameEditorStaff(row, value) {
+  const name = value.trim();
+  const oldName = Object.keys(state.editorSchedule.schedule)[row];
+  if (!name || (name !== oldName && state.editorSchedule.schedule[name])) {
+    els.editorFeedback.textContent = "직원 이름을 입력하고 중복되지 않게 해주세요.";
+    renderScheduleEditor();
+    return;
+  }
+  if (name !== oldName) {
+    const schedule = state.editorSchedule.schedule;
+    schedule[name] = schedule[oldName];
+    delete schedule[oldName];
+  }
+}
+
+function addEditorStaff() {
+  const name = els.editorStaffName.value.trim();
+  const data = state.editorSchedule;
+  if (!data || !name || data.schedule[name]) {
+    els.editorFeedback.textContent = "직원 이름을 입력하고 중복 여부를 확인해 주세요.";
+    return;
+  }
+  const dayCount = Math.max(8, ...Object.values(data.schedule).map(shifts => shifts.length));
+  data.schedule[name] = Array(dayCount).fill("off");
+  els.editorStaffName.value = "";
+  renderScheduleEditor();
+}
+
+function saveScheduleEditor() {
+  try {
+    validateSchedule(state.editorSchedule);
+    state.localScheduleStore[state.editorMonth] = {
+      startDate: state.editorSchedule.startDate,
+      schedule: state.editorSchedule.schedule
+    };
+    persistLocalSchedules();
+    rebuildScheduleStore();
+    rerunSelection();
+    closeScheduleEditor();
+  } catch (error) {
+    els.editorFeedback.textContent = error.message;
+  }
+}
+
 function renderSchedulesList() {
   const months = Object.keys(state.scheduleStore).sort();
   if (!months.length) {
@@ -337,13 +567,22 @@ function renderSchedulesList() {
           <span class="schedule-row-month">${Number(m)}월 <span style="font-size:13px;color:var(--muted);font-weight:600">(${y})</span></span>
           <span class="schedule-row-meta">${dateLabel} · ${names.length}명 · ${dayCount}일</span>
         </div>
-        <button class="btn-light" style="color:#c0392b;border-color:#f5c0b8;padding:4px 12px;font-size:12px" data-delete="${escapeAttr(key)}" type="button">삭제</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn-light" style="padding:4px 12px;font-size:12px" data-edit="${escapeAttr(key)}" type="button">수정</button>
+          <button class="btn-light" style="color:#c0392b;border-color:#f5c0b8;padding:4px 12px;font-size:12px" data-delete="${escapeAttr(key)}" type="button">삭제</button>
+        </div>
       </div>
     `;
   }).join("");
 
   els.schedulesList.querySelectorAll("[data-delete]").forEach(btn => {
     btn.addEventListener("click", () => deleteMonth(btn.dataset.delete));
+  });
+  els.schedulesList.querySelectorAll("[data-edit]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      closeSchedulesModal();
+      openScheduleEditor(btn.dataset.edit);
+    });
   });
 }
 
@@ -370,7 +609,10 @@ function deleteMonth(key) {
 function addDaysISO(isoDateStr, n) {
   const d = new Date(isoDateStr + "T00:00:00");
   d.setDate(d.getDate() + n);
-  return d.toISOString().substring(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function getShiftFromStore(name, isoDate) {

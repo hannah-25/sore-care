@@ -364,7 +364,26 @@
     .shift-D { background: var(--d); }
     .shift-E { background: var(--e); }
     .shift-N { background: var(--n); }
+    .shift-M { background: #c9d8f7; }
+    .shift-S { background: #d9c8ef; }
     .shift-off { background: var(--off); color: #7d8b98; }
+    .editor-name,
+    .editor-shift {
+      border: 0;
+      border-radius: 4px;
+      padding: 4px;
+      font: inherit;
+      color: inherit;
+      background: transparent;
+    }
+    .editor-name { width: 82px; font-weight: 700; }
+    .editor-shift { width: 30px; text-align: center; cursor: pointer; font-weight: 800; }
+    .editor-shift.shift-D { background: var(--d); }
+    .editor-shift.shift-E { background: var(--e); }
+    .editor-shift.shift-N { background: var(--n); }
+    .editor-shift.shift-M { background: #c9d8f7; }
+    .editor-shift.shift-S { background: #d9c8ef; }
+    .editor-shift.shift-off { background: var(--off); }
     .selected-cell {
       outline: 2px solid rgba(82, 106, 130, 0.45);
       outline-offset: -2px;
@@ -759,6 +778,7 @@
         <p class="modal-feedback" id="schedule-feedback"></p>
         <input type="file" id="import-file-input" accept=".json" style="display:none" aria-hidden="true">
         <button class="btn-light" id="import-schedule" type="button">파일 불러오기</button>
+        <button class="btn-light" id="copy-gemini-prompt" type="button">Gemini 프롬프트 복사</button>
         <button class="btn-primary" id="save-schedule" type="button">저장</button>
       </div>
     </div>
@@ -797,6 +817,30 @@
         <button class="btn-light" id="close-schedules" type="button" style="padding:4px 12px">닫기</button>
       </div>
       <div class="modal-body" id="schedules-list" style="padding:12px 18px 18px;display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="schedule-editor-modal">
+    <div class="modal-card" style="width:min(1600px,98vw);max-height:98vh" role="dialog" aria-modal="true" aria-labelledby="schedule-editor-title">
+      <div class="modal-head" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <h2 id="schedule-editor-title" style="margin:0">근무표 편집</h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="editor-month" class="date-input" aria-label="편집할 월" style="width:auto"></select>
+          <input id="editor-start-date" class="date-input" type="date" aria-label="근무표 시작일" style="width:142px">
+          <button class="btn-light" id="close-schedule-editor" type="button" style="padding:4px 12px">닫기</button>
+        </div>
+      </div>
+      <div class="modal-body" style="overflow:hidden;padding:8px 12px">
+        <div id="editor-grid"></div>
+        <div style="display:flex;gap:8px;margin-top:14px;align-items:center">
+          <input id="editor-staff-name" class="date-input" type="text" placeholder="직원 이름" aria-label="추가할 직원 이름" style="width:130px">
+          <button class="btn-light" id="add-editor-staff" type="button">직원 추가</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <p class="modal-feedback" id="editor-feedback"></p>
+        <button class="btn-primary" id="save-schedule-editor" type="button">변경 저장</button>
+      </div>
     </div>
   </div>
 
