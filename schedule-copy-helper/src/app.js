@@ -4,13 +4,11 @@ const STORAGE_KEYS = {
   config: "schedule-copy-helper:config",
   windowSize: "schedule-copy-helper:windowSize"
 };
-const BUNDLED_SCHEDULE_MANIFEST = "data/schedules/index.json";
 const MIN_WINDOW_SIZE = 1;
 const MAX_WINDOW_SIZE = 31;
 
 const state = {
   scheduleStore: {},    // { "2025-06": { startDate, schedule }, ... }
-  bundledScheduleStore: {},
   localScheduleStore: {},
   windowStartDate: null,
   config: {
@@ -56,7 +54,6 @@ async function init() {
   if (parsedSavedSize) state.windowSize = parsedSavedSize;
   updateWindowSizeButtons();
 
-  await loadBundledSchedules();
   loadSavedSchedules();
 
   if (Object.keys(state.scheduleStore).length > 0) {
@@ -100,51 +97,8 @@ function loadSavedSchedules() {
   rebuildScheduleStore();
 }
 
-async function loadBundledSchedules() {
-  const files = await fetchJson(BUNDLED_SCHEDULE_MANIFEST);
-  if (!Array.isArray(files)) {
-    rebuildScheduleStore();
-    return;
-  }
-
-  const loaded = await Promise.all(files.map(async file => {
-    if (typeof file !== "string" || !file.endsWith(".json")) return null;
-    return fetchJson(`data/schedules/${encodeURIComponent(file)}`);
-  }));
-
-  for (const data of loaded) {
-    try {
-      if (!data) continue;
-      validateSchedule(data);
-      state.bundledScheduleStore[data.month] = {
-        startDate: data.startDate,
-        schedule: data.schedule
-      };
-    } catch {
-      // Ignore invalid bundled files so one bad schedule does not block the app.
-    }
-  }
-
-  rebuildScheduleStore();
-}
-
-async function fetchJson(url) {
-  try {
-    const res = await fetch(url);
-    return res.ok ? res.json() : null;
-  } catch {
-    return null;
-  }
-}
-
 function rebuildScheduleStore() {
-  state.scheduleStore = { ...state.bundledScheduleStore };
-  for (const [month, schedule] of Object.entries(state.localScheduleStore)) {
-    // Legacy cached schedules have no source marker; let deployed data replace them.
-    if (!state.bundledScheduleStore[month] || schedule.source === "manual") {
-      state.scheduleStore[month] = schedule;
-    }
-  }
+  state.scheduleStore = { ...state.localScheduleStore };
 }
 
 function persistLocalSchedules() {
@@ -162,34 +116,11 @@ function formatSavedSchedule(saved) {
 
 async function loadConfig() {
   const saved = localStorage.getItem(STORAGE_KEYS.config);
-  if (saved) {
-    try {
-      state.config = JSON.parse(saved);
-      return;
-    } catch {
-      localStorage.removeItem(STORAGE_KEYS.config);
-    }
-  }
-
-  const [staff, exclude, lowPriority] = await Promise.all([
-    fetchText("config/staff.txt"),
-    fetchText("config/exclude_names.txt"),
-    fetchText("config/low_priority_names.txt")
-  ]);
-
-  state.config = {
-    staff: parseLines(staff),
-    exclude: parseLines(exclude),
-    lowPriority: parseLines(lowPriority)
-  };
-}
-
-async function fetchText(url) {
+  if (!saved) return;
   try {
-    const res = await fetch(url);
-    return res.ok ? res.text() : "";
+    state.config = JSON.parse(saved);
   } catch {
-    return "";
+    localStorage.removeItem(STORAGE_KEYS.config);
   }
 }
 
@@ -309,7 +240,7 @@ function saveScheduleFromTextarea() {
 function loadSchedule(data, persist) {
   validateSchedule(data);
   const monthKey = data.month;
-  state.localScheduleStore[monthKey] = { startDate: data.startDate, schedule: data.schedule, source: "manual" };
+  state.localScheduleStore[monthKey] = { startDate: data.startDate, schedule: data.schedule };
   rebuildScheduleStore();
 
   if (!state.windowStartDate) {
@@ -418,7 +349,6 @@ function renderSchedulesList() {
 
 function deleteMonth(key) {
   delete state.localScheduleStore[key];
-  delete state.bundledScheduleStore[key];
   rebuildScheduleStore();
   persistLocalSchedules();
   renderSchedulesList();
